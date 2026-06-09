@@ -346,7 +346,7 @@
 
 <script>
     // এখানে আপনার গুগল স্ক্রিপ্টের লিংকটি বসান
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyN2UnXMaq45mxAcKcgxkA-qRy3NVquhiaXuWLp0Mp2yIlNIwkPHp8DnorHLMn1nyImuw/exec"; 
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyyV1cEVM35ZWclV83KX_i3uLtQAvszVs7HalulW-zpcJi7U_V9odnAOCGA9zpOfx04Aw/exec"; 
     
     let allData = [];
     let selectedImageBase64 = null;
@@ -612,40 +612,52 @@
     }
 
     async function submitEdit(e) {
-        e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = "প্রসেসিং...";
-
-        const payload = {
-            action: 'updateRecord',
-            bpNumber: document.getElementById('editBpNo').value,
-            newName: document.getElementById('editName').value,
-            newBpNo: document.getElementById('editNewBpNo').value,
-            newMobile: document.getElementById('editMobile').value,
-            newOffice: document.getElementById('editOffice').value,
-            imageBase64: selectedImageBase64 // এটি এখন কম্প্রেস করা ডেটা
-        };
-
-        try {
-            const response = await fetch(GAS_API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                showToast(result.message);
-                closeModal();
-                fetchData();
-            } else {
-                showToast('এরর: ' + result.message);
-            }
-        } catch (error) {
-            showToast('নেটওয়ার্ক এরর।');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "সাবমিট করুন";
-        }
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "প্রসেসিং...";
+    
+    // যদি নতুন ছবি সিলেক্ট না করা থাকে, তবে imageBase64 null পাঠাবো
+    // তাই ভ্যারিয়েবলটিকে ঠিকমতো হ্যান্ডেল করছি কিনা চেক করা দরকার
+    // (selectedImageBase64 ভ্যারিয়েবলটি গ্লোবাল ভাবেই ডিফাইন্ড আছে, তাই এটি ঠিক আছে)
+    
+    // তবে নিশ্চিত করার জন্য যে এটি স্ট্রিং "null" না:
+    let finalImageBase64 = null;
+    if(selectedImageBase64 && selectedImageBase64.length > 100) {
+    finalImageBase64 = selectedImageBase64;
+    }
+    
+    const payload = {
+    action: 'updateRecord',
+    bpNumber: document.getElementById('editBpNo').value,
+    newName: document.getElementById('editName').value,
+    newBpNo: document.getElementById('editNewBpNo').value,
+    newMobile: document.getElementById('editMobile').value,
+    newOffice: document.getElementById('editOffice').value,
+    imageBase64: finalImageBase64
+    };
+    
+    try {
+    const response = await fetch(GAS_API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+    showToast(result.message);
+    closeModal();
+    fetchData();
+    } else {
+    // এখানে ব্যাকএন্ড থেকে আসা নির্দিষ্ট এরর মেসেজটি দেখাবে
+    showToast(result.message);
+    }
+    } catch (error) {
+    showToast('নেটওয়ার্ক এরর।');
+    } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerText = "সাবমিট করুন";
+    }
     }
 
     function showToast(msg) {
