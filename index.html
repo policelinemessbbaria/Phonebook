@@ -183,7 +183,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            overflow-y: auto; /* স্ক্রল করার জন্য */
+            overflow-y: auto;
         }
         .modal-content {
             background: white;
@@ -212,7 +212,7 @@
             object-fit: cover;
             margin-top: 10px;
             border: 1px solid #ddd;
-            display: none; /* ডিফল্টভাবে লুকানো */
+            display: none; 
         }
         .btn-submit {
             background: var(--primary-color);
@@ -298,7 +298,8 @@
             
             <div class="form-group">
                 <label>ছবি আপলোড করুন (ঐচ্ছিক)</label>
-                <input type="file" id="editPhoto" accept="image/*" onchange="previewImage()">
+                <input type="file" id="editPhoto" accept="image/*" onchange="handleImageUpload(this)">
+                <div style="font-size: 0.8rem; color: #666; margin-top: 2px;">সর্বোচ্চ সাইজ: ৫এমব (অটো কম্প্রেস হবে)</div>
                 <img id="imagePreview" class="preview-img" alt="Preview">
                 <small style="color:red;">ছবি সরাসরি G কলামে আপডেট হবে।</small>
             </div>
@@ -335,7 +336,7 @@
             
             <div style="overflow:hidden; margin-top:15px;">
                 <button type="button" class="btn-cancel" onclick="closeModal()">বাতিল</button>
-                <button type="submit" class="btn-submit">সাবমিট করুন</button>
+                <button type="submit" class="btn-submit" id="submitBtn">সাবমিট করুন</button>
             </div>
         </form>
     </div>
@@ -432,7 +433,6 @@
         }
         data.forEach(user => {
             const mobileEn = convertBnToEn(user.mobile);
-            // ছবি না থাকলে ডিফল্ট ছবি বা প্লেসহোল্ডার
             const photoUrl = user.photo ? user.photo : "https://via.placeholder.com/100?text=No+Img";
             
             const card = document.createElement('div');
@@ -469,13 +469,9 @@
         const office = officeFilter.value;
 
         const filtered = allData.filter(user => {
-            // ১. র‍্যাংক ফিল্টার
             const matchRank = rank === '' || user.rank === rank;
-            
-            // ২. অফিস ফিল্টার
             const matchOffice = office === '' || user.office === office;
 
-            // ৩. সার্চ ফিল্টার (শুধুমাত্র ব্রাশ নাম্বার)
             let matchSearch = false;
             if (query === '') {
                 matchSearch = true; 
@@ -496,19 +492,98 @@
         navigator.clipboard.writeText(text).then(() => showToast('নাম্বার কপি হয়েছে!'));
     }
 
-    // ছবি প্রিভিউ দেখানো
-    function previewImage() {
-        const file = document.getElementById('editPhoto').files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('imagePreview').src = e.target.result;
+    // ==========================================
+    // ইমেজ কম্প্রেশন লজিক (HTML5 Canvas)
+    // ==========================================
+    
+    async function handleImageUpload(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            
+            // প্রিভিউ লোডার দেখানো (ঐচ্ছিক)
+            showToast('ছবি প্রসেসিং হচ্ছে...');
+
+            try {
+                // কম্প্রেস ফাংশন কল করা
+                const compressedBase64 = await compressImage(file);
+                
+                // গ্লোবাল ভেরিয়েবলে সেভ করা
+                selectedImageBase64 = compressedBase64;
+
+                // প্রিভিউ আপডেট করা
+                document.getElementById('imagePreview').src = compressedBase64;
                 document.getElementById('imagePreview').style.display = 'block';
-                selectedImageBase64 = e.target.result; // বেস ৬৪ স্টোর করা
+                
+                // আনুমানিক সাইজ দেখানো (অপশনাল)
+                const sizeInKB = Math.round((compressedBase64.length * 0.75) / 1024);
+                showToast(`ছবি প্রস্তুত (${sizeInKB} KB)`);
+
+            } catch (error) {
+                console.error(error);
+                showToast('ছবি প্রসেসিং ব্যর্থ হয়েছে।');
+                selectedImageBase64 = null;
             }
-            reader.readAsDataURL(file);
         }
     }
+
+    // মেইন কম্প্রেশন ফাংশন
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+                    const maxWidth = 800; // সর্বোচ্চ প্রস্থ
+                    const maxHeight = 800; // সর্বোচ্চ উচ্চতা
+
+                    // অ্যাসপেক্ট রেশিও ঠিক রেখে রিসাইজ করা
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width *= maxHeight / height;
+                            height = maxHeight;
+                        }
+                    }
+
+                    // ক্যানভাস তৈরি করা
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // JPEG কোয়ালিটি ০.৯ দিয়ে শুরু করা
+                    let quality = 0.9;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                    // লুপ চালিয়ে কোয়ালিটি কমিয়ে সাইজ ৩০০KB এর নিচে আনা
+                    // Base64 স্ট্রিং এর লেন্থ * ০.৭৫ আনুমানিক বাইট সাইজ দেয়
+                    while (dataUrl.length > 400000 && quality > 0.1) { // ৪০০,০০০ ক্যারেক্টার মানে প্রায় ৩০০KB
+                        quality -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+
+                    resolve(dataUrl);
+                };
+                
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
+    // ==========================================
+    // এডিট এবং সাবমিট লজিক
+    // ==========================================
 
     function openEditModal(bpNo, rank, brushNo, name, bp, mobile, office, photo) {
         document.getElementById('editBpNo').value = bpNo;
@@ -522,6 +597,8 @@
         // ছবি প্রিভিউ রিসেট
         selectedImageBase64 = null;
         document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('editPhoto').value = ''; // ফাইল ইনপুট ক্লিয়ার
+        
         if(photo) {
             document.getElementById('imagePreview').src = photo;
             document.getElementById('imagePreview').style.display = 'block';
@@ -536,7 +613,10 @@
 
     async function submitEdit(e) {
         e.preventDefault();
-        
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "প্রসেসিং...";
+
         const payload = {
             action: 'updateRecord',
             bpNumber: document.getElementById('editBpNo').value,
@@ -544,11 +624,10 @@
             newBpNo: document.getElementById('editNewBpNo').value,
             newMobile: document.getElementById('editMobile').value,
             newOffice: document.getElementById('editOffice').value,
-            imageBase64: selectedImageBase64 // ছবি থাকলে বেস ৬৪ পাঠানো হবে
+            imageBase64: selectedImageBase64 // এটি এখন কম্প্রেস করা ডেটা
         };
 
         try {
-            showToast('আপলোড হচ্ছে...'); // ছবি আপলোড সময় কিছুটা সময় লাগতে পারে
             const response = await fetch(GAS_API_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload)
@@ -557,12 +636,15 @@
             if (result.status === 'success') {
                 showToast(result.message);
                 closeModal();
-                fetchData(); // ডেটা রিফ্রেশ করে নতুন ছবি দেখানোর জন্য
+                fetchData();
             } else {
                 showToast('এরর: ' + result.message);
             }
         } catch (error) {
-            showToast('নেটওয়ার্ক এরর বা ছবি খুব বড় হয়ে গেছে।');
+            showToast('নেটওয়ার্ক এরর।');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "সাবমিট করুন";
         }
     }
 
