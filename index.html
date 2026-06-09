@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>পুলিশ ইউনিট ডিরেক্টরি</title>
     <style>
-        /* সব স্টাইল আগের মতোই রয়েছে */
         :root {
             --primary-color: #006a4e;
             --secondary-color: #f42a41;
@@ -44,6 +43,21 @@
             flex-direction: column;
             gap: 15px;
         }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        /* ইনপুট এবং বাটনের লেআউট */
+        .input-group {
+            display: flex;
+            gap: 5px;
+        }
+        
         input, select {
             padding: 12px;
             border: 1px solid #ddd;
@@ -51,9 +65,36 @@
             font-size: 1rem;
             outline: none;
         }
+        
+        /* সার্চ ইনপুট স্টাইল */
+        #searchInput {
+            flex-grow: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        /* সার্চ বাটন স্টাইল */
+        .btn-search {
+            background-color: var(--primary-color);
+            color: white;
+            border: 1px solid var(--primary-color);
+            padding: 0 20px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-search:hover {
+            background-color: #00503a;
+        }
+
         input:focus, select:focus {
             border-color: var(--primary-color);
         }
+        
         .user-card {
             background: var(--card-bg);
             border-radius: 8px;
@@ -113,6 +154,7 @@
             cursor: pointer;
             float: right;
         }
+        
         /* Modal Styles */
         .modal {
             display: none;
@@ -139,14 +181,6 @@
             font-size: 1.5rem;
             cursor: pointer;
             float: right;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
         }
         .form-group input {
             width: 100%;
@@ -202,13 +236,16 @@
     <div class="search-box">
         <div class="form-group">
             <label for="rankFilter">পদবী নির্বাচন করুন</label>
-            <select id="rankFilter">
+            <select id="rankFilter" onchange="filterData()">
                 <option value="">সকল পদবী</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="searchInput">অনুসন্ধান করুন</label>
-            <input type="text" id="searchInput" placeholder="নাম, ব্রাশ নং, বিপি নং বা মোবাইল...">
+            <label>ব্রাশ নাম্বার দিয়ে অনুসন্ধান করুন</label>
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="এখানে নাম্বার লিখুন...">
+                <button class="btn-search" onclick="filterData()">🔍</button>
+            </div>
         </div>
     </div>
     <div id="loader" style="text-align:center; display:none;">ডেটা লোড হচ্ছে...</div>
@@ -255,7 +292,7 @@
 <div id="toast">মেসেজ</div>
 
 <script>
-    // এখানে আপনার ধাপ ২ থেকে পাওয়া গুগল স্ক্রিপ্ট ওয়েব অ্যাপ লিংকটি বসান
+    // এখানে আপনার গুগল স্ক্রিপ্টের লিংকটি বসান
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyWZAdVraTQJwghHzcgIOqCDhl6GWxHSAmrjpTYEksDqgeAYgjTR_0wKKGoPv7ZzUHobg/exec"; 
     
     let allData = [];
@@ -271,6 +308,14 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         fetchData();
+    });
+
+    // এন্টার কি চাপলে সার্চ হবে
+    document.getElementById("searchInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            filterData();
+        }
     });
 
     async function fetchData() {
@@ -338,33 +383,38 @@
         });
     }
 
-    const searchInput = document.getElementById('searchInput');
-    const rankFilter = document.getElementById('rankFilter');
-
     function filterData() {
-        const query = searchInput.value.toLowerCase().trim();
+        const searchInput = document.getElementById('searchInput');
+        const rankFilter = document.getElementById('rankFilter');
+        
+        // ইনপুট ভ্যালু নেওয়া এবং বাংলা থাকলে ইংরেজিতে কনভার্ট করা
+        const query = searchInput.value.trim();
         const queryEn = convertBnToEn(query);
         const rank = rankFilter.value;
 
         const filtered = allData.filter(user => {
+            // ১. র‍্যাংক ফিল্টার
             const matchRank = rank === '' || user.rank === rank;
-            const brushEn = convertBnToEn(user.brushNo).toLowerCase();
-            const bpEn = convertBnToEn(user.bpNo).toLowerCase();
-            const mobileEn = convertBnToEn(user.mobile).toLowerCase();
-            const nameStr = user.name.toLowerCase();
 
-            const matchSearch = !query || 
-                                brushEn.includes(queryEn) || 
-                                bpEn.includes(queryEn) || 
-                                mobileEn.includes(queryEn) || 
-                                nameStr.includes(query);
+            // ২. সার্চ ফিল্টার (শুধুমাত্র ব্রাশ নাম্বার)
+            let matchSearch = false;
+            
+            // যদি সার্চ বক্স খালি থাকে, তবে সব ডেটা দেখাবে (নির্দিষ্ট র‍্যাংকের)
+            if (query === '') {
+                matchSearch = true;
+            } else {
+                // ব্রাশ নাম্বার ইংরেজিতে কনভার্ট করে চেক করা
+                const brushEn = convertBnToEn(user.brushNo);
+                if (brushEn.includes(queryEn)) {
+                    matchSearch = true;
+                }
+            }
+
             return matchRank && matchSearch;
         });
+        
         renderData(filtered);
     }
-
-    searchInput.addEventListener('input', filterData);
-    rankFilter.addEventListener('change', filterData);
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => showToast('নাম্বার কপি হয়েছে!'));
