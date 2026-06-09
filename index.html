@@ -51,13 +51,10 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        
-        /* ইনপুট এবং বাটনের লেআউট */
         .input-group {
             display: flex;
             gap: 5px;
         }
-        
         input, select {
             padding: 12px;
             border: 1px solid #ddd;
@@ -65,15 +62,11 @@
             font-size: 1rem;
             outline: none;
         }
-        
-        /* সার্চ ইনপুট স্টাইল */
         #searchInput {
             flex-grow: 1;
             border-top-right-radius: 0;
             border-bottom-right-radius: 0;
         }
-
-        /* সার্চ বাটন স্টাইল */
         .btn-search {
             background-color: var(--primary-color);
             color: white;
@@ -87,14 +80,9 @@
             align-items: center;
             justify-content: center;
         }
-        .btn-search:hover {
-            background-color: #00503a;
-        }
+        .btn-search:hover { background-color: #00503a; }
 
-        input:focus, select:focus {
-            border-color: var(--primary-color);
-        }
-        
+        /* ইউজার কার্ড ডিজাইন */
         .user-card {
             background: var(--card-bg);
             border-radius: 8px;
@@ -102,7 +90,26 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-left: 5px solid var(--primary-color);
             margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
         }
+        
+        /* প্রোফাইল ছবি */
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+
+        .user-info {
+            flex-grow: 1;
+        }
+
         .rank-badge {
             background: #e9ecef;
             padding: 2px 8px;
@@ -114,6 +121,13 @@
             font-size: 1.2rem;
             font-weight: bold;
             margin: 5px 0;
+        }
+        .office-badge {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: block;
         }
         .mobile-section {
             display: flex;
@@ -145,6 +159,7 @@
         }
         .btn-copy:hover { background: #ffecb3; }
         .btn-call:hover { background: #c8e6c9; color: var(--primary-color); }
+        
         .btn-edit {
             background-color: var(--secondary-color);
             color: white;
@@ -153,6 +168,7 @@
             border-radius: 4px;
             cursor: pointer;
             float: right;
+            margin-top: -5px;
         }
         
         /* Modal Styles */
@@ -167,6 +183,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            overflow-y: auto; /* স্ক্রল করার জন্য */
         }
         .modal-content {
             background: white;
@@ -174,6 +191,8 @@
             border-radius: 10px;
             width: 90%;
             max-width: 400px;
+            position: relative;
+            top: 50px;
         }
         .close-btn {
             background: none;
@@ -185,6 +204,15 @@
         .form-group input {
             width: 100%;
             box-sizing: border-box;
+        }
+        .preview-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            display: none; /* ডিফল্টভাবে লুকানো */
         }
         .btn-submit {
             background: var(--primary-color);
@@ -241,6 +269,12 @@
             </select>
         </div>
         <div class="form-group">
+            <label for="officeFilter">কর্মরত অফিস/দপ্তর নির্বাচন করুন</label>
+            <select id="officeFilter" onchange="filterData()">
+                <option value="">সকল দপ্তর</option>
+            </select>
+        </div>
+        <div class="form-group">
             <label>ব্রাশ নাম্বার দিয়ে অনুসন্ধান করুন</label>
             <div class="input-group">
                 <input type="text" id="searchInput" placeholder="এখানে নাম্বার লিখুন...">
@@ -261,6 +295,15 @@
         </div>
         <form id="editForm" onsubmit="submitEdit(event)">
             <input type="hidden" id="editBpNo">
+            
+            <div class="form-group">
+                <label>ছবি আপলোড করুন (ঐচ্ছিক)</label>
+                <input type="file" id="editPhoto" accept="image/*" onchange="previewImage()">
+                <img id="imagePreview" class="preview-img" alt="Preview">
+                <small style="color:red;">ছবি সরাসরি G কলামে আপডেট হবে।</small>
+            </div>
+            <br>
+            
             <div class="form-group">
                 <label>র‍্যাঙ্ক</label>
                 <input type="text" id="displayRank" disabled style="background:#eee;">
@@ -271,16 +314,25 @@
             </div>
             <div class="form-group">
                 <label>নাম (Name)</label>
-                <input type="text" id="editName" required>
+                <input type="text" id="editName">
+                <small style="color:red;">আপডেট হবে I কলামে</small>
             </div>
             <div class="form-group">
                 <label>বিপি নাম্বার (BP Number)</label>
-                <input type="text" id="editNewBpNo" required>
+                <input type="text" id="editNewBpNo">
+                <small style="color:red;">আপডেট হবে J কলামে</small>
             </div>
             <div class="form-group">
                 <label>মোবাইল নাম্বার</label>
-                <input type="text" id="editMobile" required>
+                <input type="text" id="editMobile">
+                <small style="color:red;">আপডেট হবে K কলামে</small>
             </div>
+            <div class="form-group">
+                <label>কর্মরত অফিস/দপ্তর</label>
+                <input type="text" id="editOffice">
+                <small style="color:red;">আপডেট হবে H কলামে</small>
+            </div>
+            
             <div style="overflow:hidden; margin-top:15px;">
                 <button type="button" class="btn-cancel" onclick="closeModal()">বাতিল</button>
                 <button type="submit" class="btn-submit">সাবমিট করুন</button>
@@ -293,9 +345,11 @@
 
 <script>
     // এখানে আপনার গুগল স্ক্রিপ্টের লিংকটি বসান
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyWZAdVraTQJwghHzcgIOqCDhl6GWxHSAmrjpTYEksDqgeAYgjTR_0wKKGoPv7ZzUHobg/exec"; 
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyN2UnXMaq45mxAcKcgxkA-qRy3NVquhiaXuWLp0Mp2yIlNIwkPHp8DnorHLMn1nyImuw/exec"; 
     
     let allData = [];
+    let selectedImageBase64 = null;
+
     const bn2enMap = {
         '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
         '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
@@ -330,6 +384,7 @@
             if (result.status === 'success') {
                 allData = result.data;
                 populateRankFilter(allData);
+                populateOfficeFilter(allData);
                 renderData(allData);
             } else {
                 showToast('ডেটা লোডে সমস্যা হয়েছে।');
@@ -355,6 +410,19 @@
         });
     }
 
+    function populateOfficeFilter(data) {
+        const select = document.getElementById('officeFilter');
+        const offices = new Set(data.map(item => item.office));
+        offices.forEach(office => {
+            if (office) {
+                const option = document.createElement('option');
+                option.value = office;
+                option.textContent = office;
+                select.appendChild(option);
+            }
+        });
+    }
+
     function renderData(data) {
         const container = document.getElementById('result-area');
         container.innerHTML = '';
@@ -364,20 +432,27 @@
         }
         data.forEach(user => {
             const mobileEn = convertBnToEn(user.mobile);
+            // ছবি না থাকলে ডিফল্ট ছবি বা প্লেসহোল্ডার
+            const photoUrl = user.photo ? user.photo : "https://via.placeholder.com/100?text=No+Img";
+            
             const card = document.createElement('div');
             card.className = 'user-card';
             card.innerHTML = `
-                <span class="rank-badge">${user.rank}</span>
-                <div class="user-name">${user.name}</div>
-                <div><small>ব্রাশ নং:</small> <strong>${user.brushNo}</strong></div>
-                <div><small>বিপি নং:</small> <strong>${user.bpNo}</strong></div>
-                <div class="mobile-section">
-                    <span class="mobile-number">${mobileEn}</span>
-                    <button class="btn-icon btn-copy" onclick="copyToClipboard('${mobileEn}')">📋</button>
-                    <a href="tel:${mobileEn}" class="btn-icon btn-call">📞</a>
+                <img src="${photoUrl}" class="profile-pic" alt="Profile" onerror="this.src='https://via.placeholder.com/100?text=No+Img'">
+                <div class="user-info">
+                    <span class="rank-badge">${user.rank}</span>
+                    <span class="office-badge">📍 ${user.office || 'দপ্তর নির্দিষ্ট নেই'}</span>
+                    <div class="user-name">${user.name}</div>
+                    <div><small>ব্রাশ নং:</small> <strong>${user.brushNo}</strong></div>
+                    <div><small>বিপি নং:</small> <strong>${user.bpNo}</strong></div>
+                    <div class="mobile-section">
+                        <span class="mobile-number">${mobileEn}</span>
+                        <button class="btn-icon btn-copy" onclick="copyToClipboard('${mobileEn}')">📋</button>
+                        <a href="tel:${mobileEn}" class="btn-icon btn-call">📞</a>
+                    </div>
+                    <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office}', '${user.photo || ''}')">এডিট করুন</button>
+                    <div style="clear:both;"></div>
                 </div>
-                <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}')">এডিট করুন</button>
-                <div style="clear:both;"></div>
             `;
             container.appendChild(card);
         });
@@ -386,31 +461,32 @@
     function filterData() {
         const searchInput = document.getElementById('searchInput');
         const rankFilter = document.getElementById('rankFilter');
+        const officeFilter = document.getElementById('officeFilter');
         
-        // ইনপুট ভ্যালু নেওয়া এবং বাংলা থাকলে ইংরেজিতে কনভার্ট করা
         const query = searchInput.value.trim();
         const queryEn = convertBnToEn(query);
         const rank = rankFilter.value;
+        const office = officeFilter.value;
 
         const filtered = allData.filter(user => {
             // ১. র‍্যাংক ফিল্টার
             const matchRank = rank === '' || user.rank === rank;
-
-            // ২. সার্চ ফিল্টার (শুধুমাত্র ব্রাশ নাম্বার)
-            let matchSearch = false;
             
-            // যদি সার্চ বক্স খালি থাকে, তবে সব ডেটা দেখাবে (নির্দিষ্ট র‍্যাংকের)
+            // ২. অফিস ফিল্টার
+            const matchOffice = office === '' || user.office === office;
+
+            // ৩. সার্চ ফিল্টার (শুধুমাত্র ব্রাশ নাম্বার)
+            let matchSearch = false;
             if (query === '') {
-                matchSearch = true;
+                matchSearch = true; 
             } else {
-                // ব্রাশ নাম্বার ইংরেজিতে কনভার্ট করে চেক করা
                 const brushEn = convertBnToEn(user.brushNo);
                 if (brushEn.includes(queryEn)) {
                     matchSearch = true;
                 }
             }
 
-            return matchRank && matchSearch;
+            return matchRank && matchOffice && matchSearch;
         });
         
         renderData(filtered);
@@ -420,13 +496,37 @@
         navigator.clipboard.writeText(text).then(() => showToast('নাম্বার কপি হয়েছে!'));
     }
 
-    function openEditModal(bpNo, rank, brushNo, name, bp, mobile) {
+    // ছবি প্রিভিউ দেখানো
+    function previewImage() {
+        const file = document.getElementById('editPhoto').files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                selectedImageBase64 = e.target.result; // বেস ৬৪ স্টোর করা
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function openEditModal(bpNo, rank, brushNo, name, bp, mobile, office, photo) {
         document.getElementById('editBpNo').value = bpNo;
         document.getElementById('displayRank').value = rank;
         document.getElementById('displayBrushNo').value = brushNo;
         document.getElementById('editName').value = name;
         document.getElementById('editNewBpNo').value = bp;
         document.getElementById('editMobile').value = mobile;
+        document.getElementById('editOffice').value = office;
+        
+        // ছবি প্রিভিউ রিসেট
+        selectedImageBase64 = null;
+        document.getElementById('imagePreview').style.display = 'none';
+        if(photo) {
+            document.getElementById('imagePreview').src = photo;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+
         document.getElementById('editModal').style.display = 'flex';
     }
 
@@ -436,15 +536,19 @@
 
     async function submitEdit(e) {
         e.preventDefault();
+        
         const payload = {
             action: 'updateRecord',
             bpNumber: document.getElementById('editBpNo').value,
             newName: document.getElementById('editName').value,
             newBpNo: document.getElementById('editNewBpNo').value,
-            newMobile: document.getElementById('editMobile').value
+            newMobile: document.getElementById('editMobile').value,
+            newOffice: document.getElementById('editOffice').value,
+            imageBase64: selectedImageBase64 // ছবি থাকলে বেস ৬৪ পাঠানো হবে
         };
 
         try {
+            showToast('আপলোড হচ্ছে...'); // ছবি আপলোড সময় কিছুটা সময় লাগতে পারে
             const response = await fetch(GAS_API_URL, {
                 method: 'POST',
                 body: JSON.stringify(payload)
@@ -453,12 +557,12 @@
             if (result.status === 'success') {
                 showToast(result.message);
                 closeModal();
-                fetchData();
+                fetchData(); // ডেটা রিফ্রেশ করে নতুন ছবি দেখানোর জন্য
             } else {
                 showToast('এরর: ' + result.message);
             }
         } catch (error) {
-            showToast('নেটওয়ার্ক এরর।');
+            showToast('নেটওয়ার্ক এরর বা ছবি খুব বড় হয়ে গেছে।');
         }
     }
 
