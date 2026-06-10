@@ -23,13 +23,16 @@
         header {
             background-color: var(--primary-color);
             color: white;
-            padding: 15px 20px;
+            padding: 10px 20px; /* হেডার চিকন করা হয়েছে */
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             position: sticky;
             top: 0;
             z-index: 100;
         }
+        header h1 { margin: 0; font-size: 1.4rem; }
+        header p { margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9; }
+
         .container {
             max-width: 800px;
             margin: 20px auto;
@@ -96,11 +99,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: default;
+            cursor: pointer; /* কার্সার পয়েন্টার দেখাবে */
+            transition: background 0.2s;
         }
-        .compact-left { text-align: left; }
-        .compact-brush { font-weight: bold; color: var(--primary-color); font-size: 0.9rem; }
-        .compact-name { font-size: 1rem; color: #333; }
+        .compact-card:hover { background-color: #f9f9f9; }
+        
+        .compact-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            flex-wrap: wrap; /* ছোট স্ক্রিনে যেন ভেঙে না যায় */
+        }
+        .compact-brush { 
+            font-weight: bold; 
+            color: var(--primary-color); 
+            font-size: 0.85rem; 
+            background: #e8f5e9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .compact-rank {
+            font-size: 0.8rem;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .compact-name { 
+            font-size: 1rem; 
+            color: #333; 
+            font-weight: 500;
+        }
         
         /* === ২. ফুল কার্ড ভিউ (সার্চ রেজাল্ট) === */
         .full-card {
@@ -208,6 +238,17 @@
             margin-top: 10px;
             width: 100%;
             max-width: 200px;
+        }
+        .btn-back {
+            background: #eee;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
         }
 
         /* Modal Styles */
@@ -384,6 +425,31 @@
         }
     });
 
+    // === হেডার হাইট বিবেচনা করে স্ক্রল করার ফাংশন ===
+    function scrollToElement(elementId) {
+        const element = document.getElementById(elementId);
+        const header = document.querySelector('header');
+        if(element && header){
+            const headerOffset = header.offsetHeight + 20; // হেডারের উচ্চতা + ২০px গ্যাপ
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    }
+
+    // === নির্দিষ্ট ইউজারের ডিটেইলস দেখানোর ফাংশন (ক্লিক করলে) ===
+    function showUserDetails(bpNo) {
+        const user = allData.find(u => u.bpNo === bpNo);
+        if (user) {
+            renderData([user], 'full');
+            scrollToElement('result-area');
+        }
+    }
+
     async function initApp() {
         const cachedRaw = localStorage.getItem('policeDirectoryCache');
         let cachedData = null;
@@ -398,7 +464,6 @@
                 if (cachedData) {
                     allData = cachedData;
                     populateFilters(allData);
-                    // হোম পেজে 'compact' ভিউ দেখাবে
                     renderData(allData, 'compact');
                 }
             } catch (e) {
@@ -424,7 +489,6 @@
                     };
                     localStorage.setItem('policeDirectoryCache', JSON.stringify(dataToStore));
                     populateFilters(allData);
-                    // নতুন ডাটা লোড হলেও হোম পেজে 'compact' ভিউ থাকবে
                     renderData(allData, 'compact');
                 }
             }
@@ -457,10 +521,11 @@
         }
     }
 
-    // ভিউ টাইপ অনুযায়ী রেন্ডার করা ('compact' বা 'full')
     function renderData(data, viewType) {
         const container = document.getElementById('result-area');
         container.innerHTML = '';
+        
+        // ডাটা খালি হলে মেসেজ
         if (data.length === 0) {
             container.innerHTML = '<p style="text-align:center; padding:20px;">কোনো তথ্য পাওয়া যায়নি।</p>';
             return;
@@ -475,6 +540,9 @@
                 // === ফুল কার্ড ভিউ ===
                 card.className = 'full-card';
                 card.innerHTML = `
+                    <div style="margin-bottom:10px;">
+                        <a href="#" onclick="renderData(allData, 'compact'); return false;" class="btn-back">⬅ তালিকায় ফিরে যান</a>
+                    </div>
                     <div class="profile-pic-container">
                         <img src="${userImg}" class="profile-pic" alt="Profile">
                     </div>
@@ -509,9 +577,13 @@
             } else {
                 // === কমপ্যাক্ট ভিউ (হোম পেজ) ===
                 card.className = 'compact-card';
+                // কার্ডে ক্লিক করলে ফুল ভিউ আসবে
+                card.onclick = () => showUserDetails(user.bpNo);
+                
                 card.innerHTML = `
                     <div class="compact-left">
                         <span class="compact-brush">ব্রাশ: ${user.brushNo}</span>
+                        <span class="compact-rank">${user.rank}</span>
                         <span class="compact-name">${user.name}</span>
                     </div>
                 `;
@@ -530,7 +602,6 @@
         const rank = rankFilter.value;
         const office = officeFilter.value;
 
-        // ফিল্টারিং লজিক
         const filtered = allData.filter(user => {
             const matchRank = rank === '' || user.rank === rank;
             const matchOffice = office === '' || user.office === office;
@@ -551,15 +622,13 @@
             return matchRank && matchOffice && matchSearch;
         });
         
-        // লজিক: যদি সার্চ বা ফিল্টার অ্যাক্টিভ থাকে তবে 'full' ভিউ, নাহলে 'compact'
         const isActiveSearch = (query !== '' || rank !== '' || office !== '');
         
         if (isActiveSearch) {
-            renderData(filtered, 'full'); // সার্চে ফুল কার্ড
-            // অটোমেটিক স্ক্রল করে রেজাল্টে নিয়ে আসা
-            document.getElementById("result-area").scrollIntoView({ behavior: "smooth", block: "start" });
+            renderData(filtered, 'full');
+            scrollToElement('result-area'); // ফিক্সড স্ক্রল ফাংশন ব্যবহার করা হয়েছে
         } else {
-            renderData(filtered, 'compact'); // হোম পেজে কমপ্যাক্ট ভিউ
+            renderData(filtered, 'compact');
         }
     }
 
@@ -675,7 +744,7 @@
             if (result.status === 'success') {
                 showToast(result.message);
                 closeModal();
-                initApp();
+                initApp(); // ডাটা রিফ্রেশ
             } else {
                 showToast('এরর: ' + result.message);
             }
