@@ -11,6 +11,7 @@
             --bg-color: #f4f7f6;
             --card-bg: #ffffff;
             --text-color: #333333;
+            --label-color: #666;
         }
         body {
             font-family: 'SolaimanLipi', 'Kalpurush', sans-serif;
@@ -42,21 +43,25 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            text-align: center; /* সার্চবক্সও মাঝখানে */
         }
         .filter-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             margin-bottom: 15px;
+            justify-content: center;
         }
         .filter-row .form-group {
             flex: 1;
             min-width: 140px;
+            max-width: 250px; /* বড় হওয়া থেকে রোধ করতে */
         }
         .form-group {
             display: flex;
             flex-direction: column;
             margin-bottom: 10px;
+            text-align: left;
         }
         .form-group label {
             margin-bottom: 5px;
@@ -70,92 +75,35 @@
             font-size: 1rem;
             width: 100%;
             box-sizing: border-box;
+            text-align: center;
         }
         
-        /* লিস্ট আইটেম স্টাইল */
-        .list-item {
+        /* ফুল কার্ড স্টাইল (আগের লিস্ট ভিউ বাদ) */
+        .full-card {
             background: var(--card-bg);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            text-align: center; /* সব কিছু মাঝে */
+            border-top: 5px solid var(--primary-color);
+            animation: fadeIn 0.5s ease-in;
         }
         
-        .list-header {
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            border-left: 5px solid transparent;
-        }
-        
-        .list-header:hover {
-            background-color: #f9f9f9;
-        }
-
-        .list-header.active {
-            border-left-color: var(--primary-color);
-            background-color: #eef5f2;
-        }
-
-        .header-info {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .header-brush {
-            font-weight: bold;
-            color: var(--primary-color);
-            font-size: 0.95rem;
-        }
-        
-        .header-name {
-            font-size: 1.1rem;
-            color: #222;
-        }
-
-        .toggle-icon {
-            font-size: 1.2rem;
-            color: #777;
-            transition: transform 0.3s;
-        }
-
-        .list-header.active .toggle-icon {
-            transform: rotate(180deg);
-        }
-
-        /* বিস্তারিত ভিউ (Accordion Body) */
-        .list-details {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: none;
-            background-color: #fafafa;
-            animation: slideDown 0.3s ease-out;
-        }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .details-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: flex-start;
-        }
-
-        /* ছবি স্টাইল (১:১ রেশিও) */
+        /* ছবি স্টাইল (১:১ এবং মাঝখানে) */
         .profile-pic-container {
-            flex-shrink: 0;
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%; /* গোলাকার */
             overflow: hidden;
-            border: 2px solid #ddd;
-            background-color: #eee;
+            border: 4px solid #eee;
+            background-color: #f0f0f0;
+            margin: 0 auto 15px auto; /* উপরে নিচে অটো মার্জিন, মাঝখানে */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -166,86 +114,111 @@
             object-fit: cover;
         }
         
-        .details-info {
-            flex-grow: 1;
-            min-width: 200px;
-        }
-
+        /* বিস্তারিত টেক্সট স্টাইল */
         .rank-badge {
+            display: inline-block;
             background: #e9ecef;
             color: #555;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             margin-bottom: 5px;
+            font-weight: bold;
         }
         
+        .user-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin: 5px 0 15px 0;
+            color: var(--primary-color);
+        }
+
         .office-badge {
             background-color: #e3f2fd;
             color: #0d47a1;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             display: inline-block;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        .mobile-section {
-            display: flex;
-            align-items: center;
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* ২ কলামে ভাগ করা */
             gap: 10px;
-            background: #e8f5e9;
-            padding: 10px;
-            border-radius: 5px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .info-item {
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .info-label {
+            color: var(--label-color);
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #000;
+        }
+
+        /* মোবাইল এবং অ্যাকশন সেকশন */
+        .action-section {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 10px;
+            flex-wrap: wrap;
         }
-        .mobile-number {
-            font-weight: bold;
+
+        .btn-action {
+            background: #e8f5e9;
             color: #2e7d32;
-            font-size: 1.1rem;
-            flex-grow: 1;
-        }
-        .btn-icon {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: bold;
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 1.2rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            gap: 5px;
+            border: 1px solid #c8e6c9;
         }
-        .btn-copy:hover { background: #ffecb3; }
-        .btn-call:hover { background: #c8e6c9; color: var(--primary-color); }
         
         .btn-edit {
             background-color: var(--secondary-color);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 8px 20px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: bold;
             margin-top: 10px;
             width: 100%;
+            max-width: 200px;
         }
-
-        /* সার্চ বাটন */
-        .input-group { display: flex; }
-        #searchInput { border-radius: 5px 0 0 5px; }
+        
         .btn-search {
             background-color: var(--primary-color);
             color: white;
             border: 1px solid var(--primary-color);
             padding: 0 20px;
-            border-radius: 0 5px 5px 0;
+            border-radius: 5px;
             cursor: pointer;
+            width: 100px;
         }
+        .input-group { display: flex; justify-content: center; }
+        #searchInput { border-radius: 5px 0 0 5px; text-align: center; }
 
         /* Modal Styles */
         .modal {
@@ -265,6 +238,7 @@
             max-width: 450px;
             max-height: 90vh;
             overflow-y: auto;
+            text-align: center;
         }
         .close-btn { float: right; font-size: 1.5rem; cursor: pointer; background: none; border: none; }
         
@@ -509,63 +483,49 @@
             return;
         }
 
-        data.forEach((user, index) => {
+        data.forEach((user) => {
             const mobileEn = convertBnToEn(user.mobile);
-            const userImg = user.photo ? user.photo : 'https://via.placeholder.com/100?text=No+Img';
-            const uniqueId = `details-${index}`;
+            const userImg = user.photo ? user.photo : 'https://via.placeholder.com/150?text=No+Img';
 
+            // নতুন ফুল কার্ড লেআউট
             const card = document.createElement('div');
-            card.className = 'list-item';
+            card.className = 'full-card';
             
             card.innerHTML = `
-                <div class="list-header" onclick="toggleDetails('${uniqueId}', this)">
-                    <div class="header-info">
-                        <span class="header-brush">ব্রাশ: ${user.brushNo}</span>
-                        <span class="header-name">${user.name}</span>
-                    </div>
-                    <span class="toggle-icon">▼</span>
+                <div class="profile-pic-container">
+                    <img src="${userImg}" class="profile-pic" alt="Profile">
                 </div>
                 
-                <div id="${uniqueId}" class="list-details">
-                    <div class="details-grid">
-                        <div class="profile-pic-container">
-                            <img src="${userImg}" class="profile-pic" alt="Profile">
-                        </div>
-                        <div class="details-info">
-                            <span class="rank-badge">${user.rank}</span>
-                            ${user.office ? `<span class="office-badge">${user.office}</span>` : ''}
-                            <div style="margin-top:5px; font-size:0.9rem; color:#555;">
-                                <strong>বিপি নং:</strong> ${user.bpNo}
-                            </div>
-                            
-                            <div class="mobile-section">
-                                <span class="mobile-number">${mobileEn}</span>
-                                <button class="btn-icon btn-copy" onclick="copyToClipboard('${mobileEn}')">📋</button>
-                                <a href="tel:${mobileEn}" class="btn-icon btn-call">📞</a>
-                            </div>
-                            
-                            <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}')">
-                                এডিট করুন
-                            </button>
-                        </div>
+                <span class="rank-badge">${user.rank}</span>
+                <h3 class="user-name">${user.name}</h3>
+                ${user.office ? `<div class="office-badge">${user.office}</div>` : ''}
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">ব্রাশ নং</span>
+                        <span class="info-value">${user.brushNo}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">বিপি নং</span>
+                        <span class="info-value">${user.bpNo}</span>
+                    </div>
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span class="info-label">মোবাইল</span>
+                        <span class="info-value">${mobileEn}</span>
                     </div>
                 </div>
+
+                <div class="action-section">
+                    <a href="tel:${mobileEn}" class="btn-action">📞 কল করুন</a>
+                    <button onclick="copyToClipboard('${mobileEn}')" class="btn-action">📋 কপি</button>
+                </div>
+                
+                <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}')">
+                    এডিট করুন
+                </button>
             `;
             container.appendChild(card);
         });
-    }
-
-    function toggleDetails(id, headerElement) {
-        const content = document.getElementById(id);
-        const isActive = headerElement.classList.contains('active');
-        
-        if (!isActive) {
-            headerElement.classList.add('active');
-            content.style.display = 'block';
-        } else {
-            headerElement.classList.remove('active');
-            content.style.display = 'none';
-        }
     }
 
     function filterData() {
