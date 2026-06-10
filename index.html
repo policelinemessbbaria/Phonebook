@@ -268,6 +268,14 @@
         }
         .btn-action:hover { background: #c8e6c9; transform: translateY(-2px); }
         
+        /* WhatsApp specific style (reuse .btn-action structure but allow variance) */
+        .btn-whatsapp {
+            background: #dcf8c6; /* WhatsApp light green */
+            color: #075e54;    /* WhatsApp dark green */
+            border: 1px solid #a5d6a7;
+        }
+        .btn-whatsapp:hover { background: #c5e1a5; }
+
         .btn-edit {
             background-color: var(--secondary-color);
             color: white;
@@ -682,6 +690,19 @@
 
         data.forEach((user) => {
             const mobileEn = convertBnToEn(user.mobile);
+            
+            // === WhatsApp Number Logic ===
+            // যেহেতু ডাটাবেসে কান্ট্রি কোড নেই, তাই আমরা এখানে লজিক বসাবো
+            let waNum = mobileEn.replace(/\D/g, ''); // সব নন-ডিজিট রিমুভ করা
+            if (waNum.startsWith('0')) {
+                waNum = '880' + waNum.substring(1);
+            } else if (!waNum.startsWith('88')) {
+                // যদি শুরুতে 0 না থাকে এবং 88 ও না থাকে, তবে 880 যুক্ত করা
+                waNum = '880' + waNum;
+            }
+            const whatsappLink = `https://wa.me/${waNum}`;
+            // ===============================
+
             const userImg = user.photo ? user.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random';
             
             const card = document.createElement('div');
@@ -707,6 +728,7 @@
 
                     <div class="action-section">
                         <a href="tel:${mobileEn}" class="btn-action">📞 কল করুন</a>
+                        <a href="${whatsappLink}" target="_blank" class="btn-action btn-whatsapp">💬 হোয়াটসঅ্যাপ</a>
                         <button onclick="copyToClipboard('${mobileEn}')" class="btn-action">📋 নম্বর কপি</button>
                     </div>
                     
