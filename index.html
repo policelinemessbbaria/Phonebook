@@ -43,7 +43,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            text-align: center; /* সার্চবক্সও মাঝখানে */
+            text-align: center;
         }
         .filter-row {
             display: flex;
@@ -55,7 +55,7 @@
         .filter-row .form-group {
             flex: 1;
             min-width: 140px;
-            max-width: 250px; /* বড় হওয়া থেকে রোধ করতে */
+            max-width: 250px;
         }
         .form-group {
             display: flex;
@@ -77,33 +77,55 @@
             box-sizing: border-box;
             text-align: center;
         }
+        .input-group { display: flex; justify-content: center; }
+        #searchInput { border-radius: 5px 0 0 5px; text-align: center; }
+        .btn-search {
+            background-color: var(--primary-color);
+            color: white;
+            border: 1px solid var(--primary-color);
+            padding: 0 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        /* === ১. কমপ্যাক্ট ভিউ (হোম পেজ) === */
+        .compact-card {
+            background: var(--card-bg);
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: default;
+        }
+        .compact-left { text-align: left; }
+        .compact-brush { font-weight: bold; color: var(--primary-color); font-size: 0.9rem; }
+        .compact-name { font-size: 1rem; color: #333; }
         
-        /* ফুল কার্ড স্টাইল (আগের লিস্ট ভিউ বাদ) */
+        /* === ২. ফুল কার্ড ভিউ (সার্চ রেজাল্ট) === */
         .full-card {
             background: var(--card-bg);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            text-align: center; /* সব কিছু মাঝে */
+            text-align: center;
             border-top: 5px solid var(--primary-color);
             animation: fadeIn 0.5s ease-in;
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ছবি স্টাইল (১:১ এবং মাঝখানে) */
         .profile-pic-container {
             width: 120px;
             height: 120px;
-            border-radius: 50%; /* গোলাকার */
+            border-radius: 50%;
             overflow: hidden;
             border: 4px solid #eee;
             background-color: #f0f0f0;
-            margin: 0 auto 15px auto; /* উপরে নিচে অটো মার্জিন, মাঝখানে */
+            margin: 0 auto 15px auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -114,7 +136,6 @@
             object-fit: cover;
         }
         
-        /* বিস্তারিত টেক্সট স্টাইল */
         .rank-badge {
             display: inline-block;
             background: #e9ecef;
@@ -125,14 +146,12 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        
         .user-name {
             font-size: 1.4rem;
             font-weight: bold;
             margin: 5px 0 15px 0;
             color: var(--primary-color);
         }
-
         .office-badge {
             background-color: #e3f2fd;
             color: #0d47a1;
@@ -145,7 +164,7 @@
 
         .info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* ২ কলামে ভাগ করা */
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-bottom: 15px;
             background: #fafafa;
@@ -153,25 +172,10 @@
             border-radius: 8px;
             border: 1px solid #eee;
         }
+        .info-item { text-align: left; font-size: 0.95rem; }
+        .info-label { color: var(--label-color); font-size: 0.85rem; display: block; margin-bottom: 2px; }
+        .info-value { font-weight: 500; color: #000; }
 
-        .info-item {
-            text-align: left;
-            font-size: 0.95rem;
-        }
-
-        .info-label {
-            color: var(--label-color);
-            font-size: 0.85rem;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .info-value {
-            font-weight: 500;
-            color: #000;
-        }
-
-        /* মোবাইল এবং অ্যাকশন সেকশন */
         .action-section {
             display: flex;
             justify-content: center;
@@ -179,7 +183,6 @@
             margin-top: 10px;
             flex-wrap: wrap;
         }
-
         .btn-action {
             background: #e8f5e9;
             color: #2e7d32;
@@ -193,7 +196,6 @@
             gap: 5px;
             border: 1px solid #c8e6c9;
         }
-        
         .btn-edit {
             background-color: var(--secondary-color);
             color: white;
@@ -207,18 +209,6 @@
             width: 100%;
             max-width: 200px;
         }
-        
-        .btn-search {
-            background-color: var(--primary-color);
-            color: white;
-            border: 1px solid var(--primary-color);
-            padding: 0 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100px;
-        }
-        .input-group { display: flex; justify-content: center; }
-        #searchInput { border-radius: 5px 0 0 5px; text-align: center; }
 
         /* Modal Styles */
         .modal {
@@ -259,7 +249,6 @@
         .preview-img {
             width: 100%; height: 100%; object-fit: contain; position: absolute; display: none;
         }
-        
         .btn-submit {
             background: var(--primary-color); color: white; border: none;
             padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px;
@@ -268,7 +257,6 @@
             background: #ccc; border: none; padding: 10px 20px;
             border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px;
         }
-
         #toast {
             visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
             text-align: center; border-radius: 5px; padding: 16px; position: fixed;
@@ -372,7 +360,6 @@
 <div id="toast">মেসেজ</div>
 
 <script>
-    // এখানে আপনার গুগল স্ক্রিপ্টের Web App URL বসান
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycby1LuT5w5pro6HMPfdjvxSwn9lp-weHEWOgPfBMLMtX9F-leL-gI6IWcphpBcbfUMuOvg/exec"; 
     
     let allData = [];
@@ -397,9 +384,7 @@
         }
     });
 
-    // মেইন ইনিশিয়ালাইজেশন ফাংশন (ক্যাশিং লজিক সহ)
     async function initApp() {
-        // ১. ক্যাশ থেকে ডাটা লোড
         const cachedRaw = localStorage.getItem('policeDirectoryCache');
         let cachedData = null;
         let localVersion = 0;
@@ -413,14 +398,14 @@
                 if (cachedData) {
                     allData = cachedData;
                     populateFilters(allData);
-                    renderData(allData);
+                    // হোম পেজে 'compact' ভিউ দেখাবে
+                    renderData(allData, 'compact');
                 }
             } catch (e) {
                 console.error("Cache error:", e);
             }
         }
 
-        // ২. সার্ভার থেকে ডাটা চেক করা
         try {
             const response = await fetch(GAS_API_URL, {
                 method: 'POST',
@@ -431,9 +416,7 @@
             if (result.status === 'success') {
                 const serverVersion = result.lastUpdated || 0;
                 
-                // যদি সার্ভারের ভার্সন নতুন হয়
                 if (serverVersion > localVersion) {
-                    console.log("New data found! Updating...");
                     allData = result.data;
                     const dataToStore = {
                         data: allData,
@@ -441,9 +424,8 @@
                     };
                     localStorage.setItem('policeDirectoryCache', JSON.stringify(dataToStore));
                     populateFilters(allData);
-                    renderData(allData);
-                } else {
-                    console.log("Data is up to date.");
+                    // নতুন ডাটা লোড হলেও হোম পেজে 'compact' ভিউ থাকবে
+                    renderData(allData, 'compact');
                 }
             }
         } catch (error) {
@@ -475,7 +457,8 @@
         }
     }
 
-    function renderData(data) {
+    // ভিউ টাইপ অনুযায়ী রেন্ডার করা ('compact' বা 'full')
+    function renderData(data, viewType) {
         const container = document.getElementById('result-area');
         container.innerHTML = '';
         if (data.length === 0) {
@@ -486,44 +469,53 @@
         data.forEach((user) => {
             const mobileEn = convertBnToEn(user.mobile);
             const userImg = user.photo ? user.photo : 'https://via.placeholder.com/150?text=No+Img';
-
-            // নতুন ফুল কার্ড লেআউট
             const card = document.createElement('div');
-            card.className = 'full-card';
-            
-            card.innerHTML = `
-                <div class="profile-pic-container">
-                    <img src="${userImg}" class="profile-pic" alt="Profile">
-                </div>
-                
-                <span class="rank-badge">${user.rank}</span>
-                <h3 class="user-name">${user.name}</h3>
-                ${user.office ? `<div class="office-badge">${user.office}</div>` : ''}
-                
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">ব্রাশ নং</span>
-                        <span class="info-value">${user.brushNo}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">বিপি নং</span>
-                        <span class="info-value">${user.bpNo}</span>
-                    </div>
-                    <div class="info-item" style="grid-column: span 2;">
-                        <span class="info-label">মোবাইল</span>
-                        <span class="info-value">${mobileEn}</span>
-                    </div>
-                </div>
 
-                <div class="action-section">
-                    <a href="tel:${mobileEn}" class="btn-action">📞 কল করুন</a>
-                    <button onclick="copyToClipboard('${mobileEn}')" class="btn-action">📋 কপি</button>
-                </div>
-                
-                <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}')">
-                    এডিট করুন
-                </button>
-            `;
+            if (viewType === 'full') {
+                // === ফুল কার্ড ভিউ ===
+                card.className = 'full-card';
+                card.innerHTML = `
+                    <div class="profile-pic-container">
+                        <img src="${userImg}" class="profile-pic" alt="Profile">
+                    </div>
+                    <span class="rank-badge">${user.rank}</span>
+                    <h3 class="user-name">${user.name}</h3>
+                    ${user.office ? `<div class="office-badge">${user.office}</div>` : ''}
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">ব্রাশ নং</span>
+                            <span class="info-value">${user.brushNo}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">বিপি নং</span>
+                            <span class="info-value">${user.bpNo}</span>
+                        </div>
+                        <div class="info-item" style="grid-column: span 2;">
+                            <span class="info-label">মোবাইল</span>
+                            <span class="info-value">${mobileEn}</span>
+                        </div>
+                    </div>
+
+                    <div class="action-section">
+                        <a href="tel:${mobileEn}" class="btn-action">📞 কল করুন</a>
+                        <button onclick="copyToClipboard('${mobileEn}')" class="btn-action">📋 কপি</button>
+                    </div>
+                    
+                    <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}')">
+                        এডিট করুন
+                    </button>
+                `;
+            } else {
+                // === কমপ্যাক্ট ভিউ (হোম পেজ) ===
+                card.className = 'compact-card';
+                card.innerHTML = `
+                    <div class="compact-left">
+                        <span class="compact-brush">ব্রাশ: ${user.brushNo}</span>
+                        <span class="compact-name">${user.name}</span>
+                    </div>
+                `;
+            }
             container.appendChild(card);
         });
     }
@@ -538,6 +530,7 @@
         const rank = rankFilter.value;
         const office = officeFilter.value;
 
+        // ফিল্টারিং লজিক
         const filtered = allData.filter(user => {
             const matchRank = rank === '' || user.rank === rank;
             const matchOffice = office === '' || user.office === office;
@@ -558,7 +551,16 @@
             return matchRank && matchOffice && matchSearch;
         });
         
-        renderData(filtered);
+        // লজিক: যদি সার্চ বা ফিল্টার অ্যাক্টিভ থাকে তবে 'full' ভিউ, নাহলে 'compact'
+        const isActiveSearch = (query !== '' || rank !== '' || office !== '');
+        
+        if (isActiveSearch) {
+            renderData(filtered, 'full'); // সার্চে ফুল কার্ড
+            // অটোমেটিক স্ক্রল করে রেজাল্টে নিয়ে আসা
+            document.getElementById("result-area").scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+            renderData(filtered, 'compact'); // হোম পেজে কমপ্যাক্ট ভিউ
+        }
     }
 
     function copyToClipboard(text) {
@@ -617,19 +619,14 @@
             img.onload = function() {
                 let width = img.width;
                 let height = img.height;
-                
-                // ছোট সাইডের মাপ নিয়ে সেন্টার ক্রপ করা
                 const size = Math.min(width, height);
                 const sx = (width - size) / 2;
                 const sy = (height - size) / 2;
-
                 const canvas = document.createElement('canvas');
                 canvas.width = maxSize;
                 canvas.height = maxSize;
-                
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
-                
                 callback(canvas.toDataURL('image/jpeg', 0.7));
             }
         }
@@ -678,7 +675,6 @@
             if (result.status === 'success') {
                 showToast(result.message);
                 closeModal();
-                // সাবমিট হওয়ার পর অ্যাপ রিফ্রেশ (ক্যাশ আপডেট হবে)
                 initApp();
             } else {
                 showToast('এরর: ' + result.message);
