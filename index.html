@@ -593,6 +593,8 @@
         if (user) {
             renderData([user], 'full');
             scrollToElement('result-area');
+            // History API Added
+            history.pushState({ view: 'detail' }, '', '');
         }
     }
 
@@ -753,7 +755,14 @@
         });
         
         const isActiveSearch = (query !== '' || rank !== '' || office !== '');
-        if (isActiveSearch) { renderData(filtered, 'full'); scrollToElement('result-area'); } else { renderData(filtered, 'compact'); }
+        if (isActiveSearch) { 
+            renderData(filtered, 'full'); 
+            scrollToElement('result-area');
+            // History API Added
+            history.pushState({ view: 'search' }, '', '');
+        } else { 
+            renderData(filtered, 'compact'); 
+        }
     }
 
     function copyToClipboard(text) {
@@ -803,6 +812,8 @@
         }
         
         document.getElementById('editModal').style.display = 'flex';
+        // History API Added
+        history.pushState({ view: 'edit' }, '', '');
     }
 
     function openAddModal() {
@@ -820,6 +831,8 @@
         
         // মোডাল ওপেন করা
         document.getElementById('addModal').style.display = 'flex';
+        // History API Added
+        history.pushState({ view: 'add' }, '', '');
     }
 
     function closeModal(modalId) {
@@ -902,6 +915,36 @@
         if (event.target == document.getElementById('editModal')) closeModal('editModal');
         if (event.target == document.getElementById('addModal')) closeModal('addModal');
     }
+
+    // ==========================================
+    //  NEW LOGIC: API HISTORY NAVIGATION (BACK BUTTON)
+    // ==========================================
+
+    window.addEventListener('popstate', function(event) {
+        const editModal = document.getElementById('editModal');
+        const addModal = document.getElementById('addModal');
+
+        // ১. প্রথমে চেক করব কোনো মোডাল ওপেন আছে কিনা
+        if (editModal.style.display === 'flex') {
+            closeModal('editModal');
+            return; // ফাংশন শেষ, পেজ ব্যাক হবে না
+        }
+        if (addModal.style.display === 'flex') {
+            closeModal('addModal');
+            return; // ফাংশন শেষ, পেজ ব্যাক হবে না
+        }
+
+        // ২. মোডাল বন্ধ থাকলে, চেক করব ফুল কার্ড (ডিটেইলস) ওপেন আছে কিনা
+        const fullCardExists = document.querySelector('.full-card');
+        if (fullCardExists) {
+            // যদি ফুল কার্ড থাকে, তবে কমপ্যাক্ট ভিউতে ফিরে যাব
+            renderData(allData, 'compact');
+            return; 
+        }
+
+        // ৩. যদি মোডালও না থাকে এবং ফুল কার্ডও না থাকে (মানে হোম পেজে আছি), 
+        // তবে কিছুই করব না, ব্রাউজার তার নিজস্ব ব্যাক বাটন একশন (পূর্ববর্তী সাইটে যাওয়া) করবে।
+    });
 
     // ==========================================
     //  NEW LOGIC: Add Member
