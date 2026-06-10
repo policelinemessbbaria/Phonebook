@@ -330,7 +330,6 @@
         }
         .close-btn:hover { color: #333; }
         
-        /* Image Upload Fix: Using Label instead of Div */
         .image-upload-area {
             border: 2px dashed #bbb;
             padding: 15px;
@@ -350,15 +349,8 @@
         }
         .image-upload-area:hover { border-color: var(--primary-color); background: #f0fdf4; }
         .preview-img {
-            width: 100%; 
-            height: 100%; 
-            object-fit: contain; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            display: none;
+            width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; display: none;
             z-index: 2;
-            pointer-events: none; /* Important: Let clicks pass through to label */
         }
         .btn-submit {
             background: var(--primary-color); color: white; border: none;
@@ -468,13 +460,12 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি (১:১ রেশিও)</label>
-                
-                <!-- SOLUTION: Label tag wraps everything -->
-                <label class="image-upload-area" for="editPhoto">
-                    <span id="uploadPlaceholderEdit" style="font-size: 2rem;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
+                <!-- pointer-events: none added here -->
+                <div class="image-upload-area" onclick="document.getElementById('editPhoto').click()">
+                    <span id="uploadPlaceholderEdit" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewEditPhoto" class="preview-img">
                     <input type="file" id="editPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewEditPhoto', 'uploadPlaceholderEdit')">
-                </label>
+                </div>
             </div>
 
             <div class="form-group">
@@ -522,13 +513,12 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি</label>
-
-                <!-- SOLUTION: Label tag wraps everything -->
-                <label class="image-upload-area" for="addPhoto">
-                    <span id="uploadPlaceholderAdd" style="font-size: 2rem;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
+                <!-- pointer-events: none added here -->
+                <div class="image-upload-area" onclick="document.getElementById('addPhoto').click()">
+                    <span id="uploadPlaceholderAdd" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewAddPhoto" class="preview-img">
                     <input type="file" id="addPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewAddPhoto', 'uploadPlaceholderAdd')">
-                </label>
+                </div>
             </div>
 
             <div class="form-group">
@@ -558,7 +548,7 @@
 
 <script>
     // === কনফিগারেশন ===
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDbu3IL8xFyygtHe5GpqB9Z4qwYHyyVFXPO2IAA4dp62VgerwTMLeCOxcmSKm2Q1YNkw/exec"; 
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycby1LuT5w5pro6HMPfdjvxSwn9lp-weHEWOgPfBMLMtX9F-leL-gI6IWcphpBcbfUMuOvg/exec"; 
     
     let allData = [];
     const bn2enMap = {
@@ -602,7 +592,7 @@
     }
 
     // ==========================================
-    //  LOGIC: Init, Fetch, Cache, Render, Filter, Edit
+    //  OLD LOGIC: Init, Fetch, Cache, Render, Filter, Edit
     // ==========================================
 
     async function initApp() {
@@ -766,7 +756,7 @@
     }
 
     // ==========================================
-    //  EDIT & ADD MODAL LOGIC
+    //  EDIT MODAL LOGIC (Unchanged)
     // ==========================================
 
     function previewImage(input, imgId, placeholderId) {
@@ -803,14 +793,6 @@
         }
         document.getElementById('editPhoto').value = '';
         document.getElementById('editModal').style.display = 'flex';
-    }
-
-    function openAddModal() {
-        document.getElementById('addForm').reset();
-        document.getElementById('previewAddPhoto').style.display = 'none';
-        document.getElementById('previewAddPhoto').src = '';
-        document.getElementById('uploadPlaceholderAdd').style.display = 'block';
-        document.getElementById('addModal').style.display = 'flex';
     }
 
     function closeModal(modalId) {
@@ -869,40 +851,6 @@
         finally { submitBtn.disabled = false; submitBtn.textContent = 'সাবমিট করুন'; }
     }
 
-    async function submitAdd(e) {
-        e.preventDefault();
-        const submitBtn = document.querySelector('#addForm .btn-submit');
-        submitBtn.disabled = true; submitBtn.textContent = 'প্রসেসিং হচ্ছে...';
-        const rank = document.getElementById('addRank').value;
-        const brushNo = document.getElementById('addBrushNo').value;
-        const name = document.getElementById('addName').value;
-        const bpNo = document.getElementById('addBpNo').value;
-        const mobile = document.getElementById('addMobile').value;
-        const office = document.getElementById('addOffice').value;
-        const fileInput = document.getElementById('addPhoto');
-        let finalPhotoUrl = "";
-
-        try {
-            if (fileInput.files && fileInput.files[0]) {
-                showToast('ছবি আপলোড হচ্ছে...');
-                finalPhotoUrl = await uploadImageToDrive(fileInput.files[0]);
-            }
-            const payload = {
-                action: 'createRecord',
-                rank: rank, brushNo: brushNo, name: name,
-                bpNo: bpNo, mobile: mobile, office: office, photoUrl: finalPhotoUrl
-            };
-            const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const result = await response.json();
-            if (result.status === 'success') {
-                showToast('✅ নতুন সদস্য সফলভাবে যুক্ত হয়েছে।');
-                closeModal('addModal');
-                localStorage.removeItem('policeDirectoryCache'); initApp();
-            } else { showToast('❌ এরর: ' + result.message); }
-        } catch (error) { showToast('❌ নেটওয়ার্ক এরর। আবার চেষ্টা করুন।'); }
-        finally { submitBtn.disabled = false; submitBtn.textContent = 'সদস্য যুক্ত করুন'; }
-    }
-
     async function uploadImageToDrive(file) {
         return new Promise((resolve, reject) => {
             compressImage(file, 800, async (base64String) => {
@@ -926,6 +874,85 @@
     window.onclick = function(event) {
         if (event.target == document.getElementById('editModal')) closeModal('editModal');
         if (event.target == document.getElementById('addModal')) closeModal('addModal');
+    }
+
+    // ==========================================
+    //  NEW LOGIC: Add Member
+    // ==========================================
+
+    function openAddModal() {
+        // ফর্ম ক্লিয়ার করা
+        document.getElementById('addForm').reset();
+        document.getElementById('previewAddPhoto').style.display = 'none';
+        document.getElementById('previewAddPhoto').src = '';
+        document.getElementById('uploadPlaceholderAdd').style.display = 'block';
+        
+        // মোডাল ওপেন করা
+        document.getElementById('addModal').style.display = 'flex';
+    }
+
+    async function submitAdd(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.querySelector('#addForm .btn-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'প্রসেসিং হচ্ছে...';
+
+        // ইনপুট ভ্যালু নেওয়া
+        const rank = document.getElementById('addRank').value;
+        const brushNo = document.getElementById('addBrushNo').value;
+        const name = document.getElementById('addName').value;
+        const bpNo = document.getElementById('addBpNo').value;
+        const mobile = document.getElementById('addMobile').value;
+        const office = document.getElementById('addOffice').value;
+        const fileInput = document.getElementById('addPhoto');
+
+        let finalPhotoUrl = "";
+
+        try {
+            // ছবি আপলোড (যদি থাকে)
+            if (fileInput.files && fileInput.files[0]) {
+                showToast('ছবি আপলোড হচ্ছে...');
+                finalPhotoUrl = await uploadImageToDrive(fileInput.files[0]);
+            }
+
+            // ডাটা প্রেপারেশন
+            const payload = {
+                action: 'createRecord',
+                rank: rank,
+                brushNo: brushNo,
+                name: name,
+                bpNo: bpNo,
+                mobile: mobile,
+                office: office,
+                photoUrl: finalPhotoUrl
+            };
+
+            // সার্ভারে পাঠানো
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                showToast('✅ নতুন সদস্য সফলভাবে যুক্ত হয়েছে।');
+                closeModal('addModal');
+                // ক্যাশ রিফ্রেশ
+                localStorage.removeItem('policeDirectoryCache'); 
+                initApp(); 
+            } else {
+                showToast('❌ এরর: ' + result.message);
+            }
+
+        } catch (error) {
+            console.error(error);
+            showToast('❌ নেটওয়ার্ক এরর। আবার চেষ্টা করুন।');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'সদস্য যুক্ত করুন';
+        }
     }
 
 </script>
