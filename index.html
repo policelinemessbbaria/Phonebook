@@ -330,7 +330,12 @@
         }
         .close-btn:hover { color: #333; }
         
+        /* লেবেল ট্যাগ ব্যবহার করা হয়েছে ক্রোমের সমস্যা সমাধানের জন্য */
         .image-upload-area {
+            display: flex; /* Block to Flex */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             border: 2px dashed #bbb;
             padding: 15px;
             text-align: center;
@@ -338,19 +343,19 @@
             margin-bottom: 15px;
             cursor: pointer;
             height: 160px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
             position: relative;
             background: #fafafa;
             transition: border 0.2s;
+            user-select: none; /* টেক্সট সিলেকশন বন্ধ করা */
+            -webkit-tap-highlight-color: transparent;
         }
         .image-upload-area:hover { border-color: var(--primary-color); background: #f0fdf4; }
+        
         .preview-img {
             width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; display: none;
             z-index: 2;
+            pointer-events: none; /* ছবিতে ক্লিক করলে ক্লিক লেবেলে চলে যাবে */
         }
         .btn-submit {
             background: var(--primary-color); color: white; border: none;
@@ -460,12 +465,12 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি (১:১ রেশিও)</label>
-                <!-- pointer-events: none added here -->
-                <div class="image-upload-area" onclick="document.getElementById('editPhoto').click()">
+                <!-- লেবেল এবং for অ্যাট্রিবিউট ব্যবহার করা হয়েছে -->
+                <label class="image-upload-area" for="editPhoto">
                     <span id="uploadPlaceholderEdit" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewEditPhoto" class="preview-img">
                     <input type="file" id="editPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewEditPhoto', 'uploadPlaceholderEdit')">
-                </div>
+                </label>
             </div>
 
             <div class="form-group">
@@ -513,12 +518,12 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি</label>
-                <!-- pointer-events: none added here -->
-                <div class="image-upload-area" onclick="document.getElementById('addPhoto').click()">
+                <!-- লেবেল এবং for অ্যাট্রিবিউট ব্যবহার করা হয়েছে -->
+                <label class="image-upload-area" for="addPhoto">
                     <span id="uploadPlaceholderAdd" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewAddPhoto" class="preview-img">
                     <input type="file" id="addPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewAddPhoto', 'uploadPlaceholderAdd')">
-                </div>
+                </label>
             </div>
 
             <div class="form-group">
@@ -781,7 +786,7 @@
         document.getElementById('editMobile').value = mobile;
         document.getElementById('editOffice').value = office;
         
-        // === FIX: Clone and replace file input to reset mobile state ===
+        // === FIX: Clone and replace file input to reset state (Chrome Fix) ===
         const oldInput = document.getElementById('editPhoto');
         const newInput = oldInput.cloneNode(true);
         oldInput.parentNode.replaceChild(newInput, oldInput);
@@ -804,7 +809,7 @@
         // ফর্ম ক্লিয়ার করা
         document.getElementById('addForm').reset();
         
-        // === FIX: Clone and replace file input to reset mobile state ===
+        // === FIX: Clone and replace file input to reset state (Chrome Fix) ===
         const oldInput = document.getElementById('addPhoto');
         const newInput = oldInput.cloneNode(true);
         oldInput.parentNode.replaceChild(newInput, oldInput);
@@ -850,7 +855,6 @@
         const newMobile = document.getElementById('editMobile').value;
         const newOffice = document.getElementById('editOffice').value;
         const bpNumber = document.getElementById('editBpNo').value;
-        // Note: Since we replaced the node, we must grab the current one by ID
         const fileInput = document.getElementById('editPhoto');
         let finalPhotoUrl = "";
 
@@ -916,7 +920,6 @@
         const bpNo = document.getElementById('addBpNo').value;
         const mobile = document.getElementById('addMobile').value;
         const office = document.getElementById('addOffice').value;
-        // Note: Grab the current input (the clone)
         const fileInput = document.getElementById('addPhoto');
 
         let finalPhotoUrl = "";
