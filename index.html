@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>পুলিশ ইউনিট ডিরেক্টরি</title>
+    <title>ডিজিটাল ফোনবুক</title>
     <style>
         :root {
             --primary-color: #006a4e;
@@ -407,8 +407,8 @@
 <header>
     <div class="header-content">
         <div class="header-title">
-            <h1>বাংলাদেশ পুলিশ</h1>
-            <p>ইউনিট ডিরেক্টরি ও তথ্য হালনাগাদ</p>
+            <h1>জেলা পুলিশ, ব্রাহ্মণবাড়িয়া</h1>
+            <p>ডিজিটাল ফোনবুক</p>
         </div>
         <button class="btn-add-header" onclick="openAddModal()">+ নতুন সদস্য</button>
     </div>
@@ -432,9 +432,9 @@
         </div>
 
         <div class="form-group">
-            <label>ব্রাশ নাম্বার দিয়ে অনুসন্ধান করুন</label>
+            <label>ব্রাশ/বিপি নাম্বার/নাম দিয়ে অনুসন্ধান করুন</label>
             <div class="input-group">
-                <input type="text" id="searchInput" placeholder="এখানে নাম্বার লিখুন...">
+                <input type="text" id="searchInput" placeholder="এখানে নাম্বার লিখুন যেমন:1014 বা ১০১৪...">
                 <button class="btn-search" onclick="filterData()">🔍</button>
             </div>
         </div>
@@ -495,7 +495,7 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <input type="text" id="editOffice" required placeholder="যেমন: ডিএমপি, র‍্যাব হেডকোয়ার্টার">
+                <input type="text" id="editOffice" required placeholder="যেমন: SAF রেগুলার/ D- স্টো/মেজর অফিস/ মেস...">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('editModal')">বাতিল</button>
@@ -516,11 +516,11 @@
             <div style="display: flex; gap: 10px;">
                 <div class="form-group" style="flex:1">
                     <label>র‍্যাঙ্ক</label>
-                    <input type="text" id="addRank" required placeholder="যেমন: এসআই">
+                    <input type="text" id="addRank" required placeholder="যেমন:কনস্টেবল/এসআই(স:)">
                 </div>
                 <div class="form-group" style="flex:1">
                     <label>ব্রাশ নং</label>
-                    <input type="text" id="addBrushNo" required placeholder="যেমন: ১২৩৪">
+                    <input type="text" id="addBrushNo" required placeholder="যেমন: 1014 বা ১০১৪">
                 </div>
             </div>
 
@@ -548,7 +548,7 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <input type="text" id="addOffice" required placeholder="যেমন: ডিএমপি">
+                <input type="text" id="addOffice" required placeholder="যেমন: SAF রেগুলার/ D- স্টো/মেজর অফিস/ মেস...">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('addModal')">বাতিল</button>
