@@ -822,9 +822,11 @@
             } else {
                 card.className = 'compact-card';
                 card.onclick = () => showUserDetails(user.bpNo);
+                // === এখানে পরিবর্তন করা হয়েছে ===
+                // 'ব্রাশ:' লেখাটি সরিয়ে দেওয়া হয়েছে, শুধু নাম্বার দেখাবে
                 card.innerHTML = `
                     <div class="compact-left">
-                        <span class="compact-brush">ব্রাশ: ${user.brushNo}</span>
+                        <span class="compact-brush">${user.brushNo}</span>
                         <span class="compact-rank">${user.rank}</span>
                         <span class="compact-name">${user.name}</span>
                     </div>
