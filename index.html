@@ -528,7 +528,11 @@
             <div style="display: flex; gap: 10px;">
                 <div class="form-group" style="flex:1">
                     <label>র‍্যাঙ্ক</label>
-                    <input type="text" id="addRank" required placeholder="যেমন:কনস্টেবল/এসআই(স:)">
+                    <!-- এখানে ইনপুট এর বদলে সিলেক্ট ড্রপডাউন বসানো হয়েছে -->
+                    <select id="addRank" required>
+                        <option value="" disabled selected>পদবী নির্বাচন করুন</option>
+                        <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে অপশন লোড হবে -->
+                    </select>
                 </div>
                 <div class="form-group" style="flex:1">
                     <label>ব্রাশ নং</label>
@@ -672,24 +676,46 @@
     }
 
     function populateFilters(data) {
+        // === ১. র‍্যাঙ্ক এবং অফিসের লিস্ট তৈরি করা ===
+        const ranks = new Set(data.map(item => item.rank).filter(r => r));
+        const offices = new Set(data.map(item => item.office).filter(o => o));
+        
+        const sortedRanks = Array.from(ranks).sort();
+        const sortedOffices = Array.from(offices).sort();
+
+        // --- A. সার্চ ফিল্টার (Rank) ---
         const rankSelect = document.getElementById('rankFilter');
-        const officeSelect = document.getElementById('officeFilter');
         if (rankSelect.options.length <= 1) {
-            const ranks = new Set(data.map(item => item.rank).filter(r => r));
-            Array.from(ranks).sort().forEach(rank => {
+            sortedRanks.forEach(rank => {
                 const option = document.createElement('option');
                 option.value = rank;
                 option.textContent = rank;
                 rankSelect.appendChild(option);
             });
-            const offices = new Set(data.map(item => item.office).filter(o => o));
-            Array.from(offices).sort().forEach(office => {
+        }
+
+        // --- B. সার্চ ফিল্টার (Office) ---
+        const officeSelect = document.getElementById('officeFilter');
+        if (officeSelect.options.length <= 1) {
+            sortedOffices.forEach(office => {
                 const option = document.createElement('option');
                 option.value = office;
                 option.textContent = office;
                 officeSelect.appendChild(option);
             });
         }
+
+        // --- C. নতুন সদস্য ড্রপডাউন (Rank) [নতুন যোগ করা হয়েছে] ---
+        const addRankSelect = document.getElementById('addRank');
+        // আগের অপশনগুলো ক্লিয়ার করে ডিফল্ট অপশন বসানো
+        addRankSelect.innerHTML = '<option value="" disabled selected>পদবী নির্বাচন করুন</option>';
+        
+        sortedRanks.forEach(rank => {
+            const option = document.createElement('option');
+            option.value = rank;
+            option.textContent = rank;
+            addRankSelect.appendChild(option);
+        });
     }
 
     function renderData(data, viewType) {
