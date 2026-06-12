@@ -680,7 +680,37 @@
         const ranks = new Set(data.map(item => item.rank).filter(r => r));
         const offices = new Set(data.map(item => item.office).filter(o => o));
         
-        const sortedRanks = Array.from(ranks).sort();
+        // === ২. কাস্টম সর্টিং: র‍্যাঙ্ক হায়ারার্কি অনুযায়ী সাজানো ===
+        // এখানে আপনার গুরুত্বপূর্ণ পদবীগুলো লিখুন, এগুলো লিস্টের উপরে থাকবে
+        const rankPriority = [
+            "SP", "এসপি", "এস.পি.",
+            "Addl SP", "অতিরিক্ত এসপি", 
+            "ASP", "এএসপি", "এ.এস.পি.",
+            "Circle ASP", "সার্কেল এএসপি",
+            "Inspector", "ইন্সপেক্টর", 
+            "SI", "এসআই", "Sub-Inspector", 
+            "ASI", "এএসআই",
+            "Naik", "নায়েক", 
+            "Constable", "কনস্টেবল"
+        ];
+
+        const sortedRanks = Array.from(ranks).sort((a, b) => {
+            const indexA = rankPriority.indexOf(a);
+            const indexB = rankPriority.indexOf(b);
+            
+            // যদি দুটোই প্রায়রিটি লিস্টে থাকে, তবে লিস্টের অর্ডার অনুযায়ী সাজাবে
+            if (indexA !== -1 && indexB !== -1) {
+                return indexA - indexB;
+            }
+            // যদি শুধু 'a' প্রায়রিটি লিস্টে থাকে, তবে 'a' আগে আসবে
+            if (indexA !== -1) return -1;
+            // যদি শুধু 'b' প্রায়রিটি লিস্টে থাকে, তবে 'b' আগে আসবে
+            if (indexB !== -1) return 1;
+            
+            // দুটোই প্রায়রিটি লিস্টে না থাকলে (যেমন নতুন বা অন্য কোনো পদবী), তবে বর্ণমালা অনুযায়ী সাজাবে
+            return a.localeCompare(b);
+        });
+
         const sortedOffices = Array.from(offices).sort();
 
         // --- A. সার্চ ফিল্টার (Rank) ---
@@ -705,7 +735,7 @@
             });
         }
 
-        // --- C. নতুন সদস্য ড্রপডাউন (Rank) [নতুন যোগ করা হয়েছে] ---
+        // --- C. নতুন সদস্য ড্রপডাউন (Rank) ---
         const addRankSelect = document.getElementById('addRank');
         // আগের অপশনগুলো ক্লিয়ার করে ডিফল্ট অপশন বসানো
         addRankSelect.innerHTML = '<option value="" disabled selected>পদবী নির্বাচন করুন</option>';
