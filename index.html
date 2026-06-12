@@ -676,47 +676,29 @@
     }
 
     function populateFilters(data) {
-        // === ১. র‍্যাঙ্ক এবং অফিসের লিস্ট তৈরি করা ===
-        const ranks = new Set(data.map(item => item.rank).filter(r => r));
-        const offices = new Set(data.map(item => item.office).filter(o => o));
-        
-        // === ২. কাস্টম সর্টিং: র‍্যাঙ্ক হায়ারার্কি অনুযায়ী সাজানো ===
-        // এখানে আপনার গুরুত্বপূর্ণ পদবীগুলো লিখুন, এগুলো লিস্টের উপরে থাকবে
-        const rankPriority = [
-            "SP", "এসপি", "এস.পি.",
-            "Addl SP", "অতিরিক্ত এসপি", 
-            "ASP", "এএসপি", "এ.এস.পি.",
-            "Circle ASP", "সার্কেল এএসপি",
-            "Inspector", "ইন্সপেক্টর", 
-            "SI", "এসআই", "Sub-Inspector", 
-            "ASI", "এএসআই",
-            "Naik", "নায়েক", 
-            "Constable", "কনস্টেবল"
-        ];
+        // === ১. শিট অর্ডার অনুযায়ী র‍্যাঙ্ক লিস্ট তৈরি করা (Sheet Order Priority) ===
+        const uniqueRanks = new Set();
+        const orderedRanks = [];
 
-        const sortedRanks = Array.from(ranks).sort((a, b) => {
-            const indexA = rankPriority.indexOf(a);
-            const indexB = rankPriority.indexOf(b);
-            
-            // যদি দুটোই প্রায়রিটি লিস্টে থাকে, তবে লিস্টের অর্ডার অনুযায়ী সাজাবে
-            if (indexA !== -1 && indexB !== -1) {
-                return indexA - indexB;
+        // ডাটা অ্যারেকে লুপ করা হচ্ছে (Row 0 থেকে শেষ পর্যন্ত)
+        for (const item of data) {
+            const rank = item.rank;
+            // যদি র‍্যাঙ্কটি আগে লিস্টে যোগ করা না হয়, তবে যোগ করা হবে
+            // এটি শিটের উপরের দিক থেকে নিচের দিক পর্যন্ত র‍্যাঙ্ক পিক করবে
+            if (rank && !uniqueRanks.has(rank)) {
+                uniqueRanks.add(rank);
+                orderedRanks.push(rank);
             }
-            // যদি শুধু 'a' প্রায়রিটি লিস্টে থাকে, তবে 'a' আগে আসবে
-            if (indexA !== -1) return -1;
-            // যদি শুধু 'b' প্রায়রিটি লিস্টে থাকে, তবে 'b' আগে আসবে
-            if (indexB !== -1) return 1;
-            
-            // দুটোই প্রায়রিটি লিস্টে না থাকলে (যেমন নতুন বা অন্য কোনো পদবী), তবে বর্ণমালা অনুযায়ী সাজাবে
-            return a.localeCompare(b);
-        });
+        }
 
+        // === ২. অফিসের লিস্ট তৈরি করা (A-Z সর্ট থাকবে) ===
+        const offices = new Set(data.map(item => item.office).filter(o => o));
         const sortedOffices = Array.from(offices).sort();
 
         // --- A. সার্চ ফিল্টার (Rank) ---
         const rankSelect = document.getElementById('rankFilter');
         if (rankSelect.options.length <= 1) {
-            sortedRanks.forEach(rank => {
+            orderedRanks.forEach(rank => {
                 const option = document.createElement('option');
                 option.value = rank;
                 option.textContent = rank;
@@ -740,7 +722,7 @@
         // আগের অপশনগুলো ক্লিয়ার করে ডিফল্ট অপশন বসানো
         addRankSelect.innerHTML = '<option value="" disabled selected>পদবী নির্বাচন করুন</option>';
         
-        sortedRanks.forEach(rank => {
+        orderedRanks.forEach(rank => {
             const option = document.createElement('option');
             option.value = rank;
             option.textContent = rank;
