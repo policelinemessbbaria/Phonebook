@@ -1,4 +1,4 @@
-const CACHE_NAME = 'digital-phonebook-v3'; // কোড চেঞ্জ করলে এই নামের শেষের সংখ্যা পরিবর্তন করুন (যেমন: v3, v4)
+const CACHE_NAME = 'digital-phonebook-v1'; // কোড চেঞ্জ করলে এই নামের শেষের সংখ্যা পরিবর্তন করুন (যেমন: v3, v4)
 
 const urlsToCache = [
   '/',
