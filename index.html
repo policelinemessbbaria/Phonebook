@@ -7,15 +7,48 @@
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#006a4e">
 
+<!-- আপডেট করা সার্ভিস ওয়ার্কার কোড: নতুন ভার্সন আসলে অটো রিলোড হবে -->
 <script>
+  let refreshing = false;
+  
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker Registered!', reg))
-        .catch(err => console.log('Service Worker Error', err));
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        console.log('Service Worker Registered!', reg);
+
+        // নতুন ভার্সন আসলে আপডেট ফাউন্ড ইভেন্ট চেক করবে
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // যদি নতুন ওয়ার্কার ইন্সটল হয় কিন্তু পুরনোটি চলছে
+              showToast('নতুন আপডেট পাওয়া গেছে! আপডেট হচ্ছে...');
+              
+              // নতুন ওয়ার্কারকে একটিভ করার মেসেজ পাঠাচ্ছি
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      });
+
+      // কন্ট্রোলার চেঞ্জ (নতুন ভার্সন একটিভ হলে) ইভেন্ট
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return; // একবার রিলোড হলে আর হবে না
+        refreshing = true;
+        window.location.reload(); // পেজ রিলোড করে নতুন ভার্সন দেখাবে
+      });
     });
   }
+
+  // সার্ভিস ওয়ার্কার থেকে মেসেজ রিসিভ করা
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+  });
 </script>
+
     <style>
         :root {
             --primary-color: #006a4e;
