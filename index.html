@@ -7,7 +7,10 @@
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#006a4e">
 
-<!-- আপডেট করা সার্ভিস ওয়ার্কার কোড: নতুন ভার্সন আসলে অটো রিলোড হবে -->
+<!-- ক্রপার লাইব্রেরি (Cropper.js) এর CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+
+<!-- আপডেট করা সার্ভিস ওয়ার্কার কোড -->
 <script>
   let refreshing = false;
   
@@ -15,33 +18,25 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then(reg => {
         console.log('Service Worker Registered!', reg);
-
-        // নতুন ভার্সন আসলে আপডেট ফাউন্ড ইভেন্ট চেক করবে
         reg.addEventListener('updatefound', () => {
           const newWorker = reg.installing;
-          
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // যদি নতুন ওয়ার্কার ইন্সটল হয় কিন্তু পুরনোটি চলছে
               showToast('নতুন আপডেট পাওয়া গেছে! আপডেট হচ্ছে...');
-              
-              // নতুন ওয়ার্কারকে একটিভ করার মেসেজ পাঠাচ্ছি
               newWorker.postMessage({ type: 'SKIP_WAITING' });
             }
           });
         });
       });
 
-      // কন্ট্রোলার চেঞ্জ (নতুন ভার্সন একটিভ হলে) ইভেন্ট
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return; // একবার রিলোড হলে আর হবে না
+        if (refreshing) return; 
         refreshing = true;
-        window.location.reload(); // পেজ রিলোড করে নতুন ভার্সন দেখাবে
+        window.location.reload(); 
       });
     });
   }
 
-  // সার্ভিস ওয়ার্কার থেকে মেসেজ রিসিভ করা
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
@@ -313,10 +308,9 @@
         }
         .btn-action:hover { background: #c8e6c9; transform: translateY(-2px); }
         
-        /* WhatsApp specific style (reuse .btn-action structure but allow variance) */
         .btn-whatsapp {
-            background: #dcf8c6; /* WhatsApp light green */
-            color: #075e54;    /* WhatsApp dark green */
+            background: #dcf8c6;
+            color: #075e54;
             border: 1px solid #a5d6a7;
         }
         .btn-whatsapp:hover { background: #c5e1a5; }
@@ -351,7 +345,7 @@
         }
         .btn-back:hover { background: #f5f5f5; }
 
-        /* Modal Styles (Shared for Edit & Add) */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -373,6 +367,7 @@
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             animation: slideUp 0.3s ease-out;
+            position: relative;
         }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
@@ -383,9 +378,9 @@
         }
         .close-btn:hover { color: #333; }
         
-        /* লেবেল ট্যাগ ব্যবহার করা হয়েছে ক্রোমের সমস্যা সমাধানের জন্য */
+        /* Image Upload Area */
         .image-upload-area {
-            display: flex; /* Block to Flex */
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -400,7 +395,7 @@
             position: relative;
             background: #fafafa;
             transition: border 0.2s;
-            user-select: none; /* টেক্সট সিলেকশন বন্ধ করা */
+            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
         .image-upload-area:hover { border-color: var(--primary-color); background: #f0fdf4; }
@@ -408,14 +403,14 @@
         .preview-img {
             width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; display: none;
             z-index: 2;
-            pointer-events: none; /* ছবিতে ক্লিক করলে ক্লিক লেবেলে চলে যাবে */
+            pointer-events: none;
         }
         .btn-submit {
             background: var(--primary-color); color: white; border: none;
             padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px;
             font-size: 1rem; font-weight: bold;
         }
-        .btn-submit.add { background-color: #2e7d32; } /* Green for Add */
+        .btn-submit.add { background-color: #2e7d32; }
         
         .btn-cancel {
             background: #e0e0e0; border: none; padding: 12px 20px;
@@ -445,6 +440,29 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* === CROP MODAL SPECIFIC STYLES === */
+        #cropModal .modal-content {
+            max-width: 600px; /* Crop modal needs to be wider */
+            padding: 15px;
+        }
+        .crop-container {
+            height: 400px;
+            background-color: #333;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #imageToCrop {
+            display: block;
+            max-width: 100%;
+        }
+        .crop-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .crop-actions button {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -518,11 +536,11 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি (১:১ রেশিও)</label>
-                <!-- লেবেল এবং for অ্যাট্রিবিউট ব্যবহার করা হয়েছে -->
                 <label class="image-upload-area" for="editPhoto">
                     <span id="uploadPlaceholderEdit" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewEditPhoto" class="preview-img">
-                    <input type="file" id="editPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewEditPhoto', 'uploadPlaceholderEdit')">
+                    <!-- ফাইল ইনপুট চেঞ্জ ইভেন্টে আমরা ক্রপিং কল করবো -->
+                    <input type="file" id="editPhoto" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'edit')">
                 </label>
             </div>
 
@@ -561,10 +579,8 @@
             <div style="display: flex; gap: 10px;">
                 <div class="form-group" style="flex:1">
                     <label>র‍্যাঙ্ক</label>
-                    <!-- এখানে ইনপুট এর বদলে সিলেক্ট ড্রপডাউন বসানো হয়েছে -->
                     <select id="addRank" required>
                         <option value="" disabled selected>পদবী নির্বাচন করুন</option>
-                        <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে অপশন লোড হবে -->
                     </select>
                 </div>
                 <div class="form-group" style="flex:1">
@@ -575,11 +591,10 @@
 
             <div class="form-group">
                 <label>প্রোফাইল ছবি</label>
-                <!-- লেবেল এবং for অ্যাট্রিবিউট ব্যবহার করা হয়েছে -->
                 <label class="image-upload-area" for="addPhoto">
                     <span id="uploadPlaceholderAdd" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewAddPhoto" class="preview-img">
-                    <input type="file" id="addPhoto" accept="image/*" style="display:none;" onchange="previewImage(this, 'previewAddPhoto', 'uploadPlaceholderAdd')">
+                    <input type="file" id="addPhoto" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'add')">
                 </label>
             </div>
 
@@ -606,7 +621,27 @@
     </div>
 </div>
 
+<!-- === NEW: CROP MODAL === -->
+<div id="cropModal" class="modal">
+    <div class="modal-content">
+        <div style="overflow:hidden;">
+            <button class="close-btn" onclick="closeCropModal()">&times;</button>
+            <h3>ছবি ক্রপ করুন (Square)</h3>
+        </div>
+        <div class="crop-container">
+            <img id="imageToCrop" src="" alt="Crop Image">
+        </div>
+        <div class="crop-actions">
+            <button type="button" class="btn-cancel" onclick="closeCropModal()">বাতিল</button>
+            <button type="button" class="btn-submit" onclick="confirmCrop()">✅ ক্রপ সিলেক্ট করুন</button>
+        </div>
+    </div>
+</div>
+
 <div id="toast">মেসেজ</div>
+
+<!-- ক্রপার লাইব্রেরি (Cropper.js) এর JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
 <script>
     // === কনফিগারেশন ===
@@ -622,6 +657,116 @@
         if (!str) return '';
         return str.toString().replace(/[০-৯]/g, m => bn2enMap[m]);
     }
+
+    // ==========================================
+    // CROPPER LOGIC (NEW)
+    // ==========================================
+    let cropper;
+    let currentCropMode = ''; // 'edit' or 'add'
+    let croppedImages = {
+        edit: null,
+        add: null
+    };
+
+    function handleFileSelect(input, mode) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                // ক্রপ মোডালে ইমেজ সেট করা
+                const imageToCrop = document.getElementById('imageToCrop');
+                imageToCrop.src = e.target.result;
+                
+                // মোড সেভ করা (Edit নাকি Add?)
+                currentCropMode = mode;
+                
+                // ক্রপ মোডাল ওপেন করা
+                document.getElementById('cropModal').style.display = 'flex';
+                
+                // আগের ক্রপার ডেস্ট্রয় করা যদি থাকে
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                // ক্রপার ইনিশিয়ালাইজ করা
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1, // 1:1 (Square)
+                    viewMode: 1,    // ছবি ক্রপ বক্সের বাইরে যাবে না
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function confirmCrop() {
+        if (!cropper) return;
+
+        // ক্রপ করা ক্যানভাস বের করা
+        const canvas = cropper.getCroppedCanvas({
+            width: 800, // আউটপুট সাইজ (High Quality)
+            height: 800,
+            minWidth: 256,
+            minHeight: 256,
+            maxWidth: 4096,
+            maxHeight: 4096,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        // বেস ৬৪ স্ট্রিং-এ কনভার্ট করা
+        const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // গ্লোবাল ভেরিয়েবলে সেভ করা
+        croppedImages[currentCropMode] = croppedDataUrl;
+
+        // ফর্ম প্রিভিউ আপডেট করা
+        if (currentCropMode === 'edit') {
+            const imgPreview = document.getElementById('previewEditPhoto');
+            const placeholder = document.getElementById('uploadPlaceholderEdit');
+            imgPreview.src = croppedDataUrl;
+            imgPreview.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else if (currentCropMode === 'add') {
+            const imgPreview = document.getElementById('previewAddPhoto');
+            const placeholder = document.getElementById('uploadPlaceholderAdd');
+            imgPreview.src = croppedDataUrl;
+            imgPreview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+
+        // ক্রপ মোডাল বন্ধ করা
+        closeCropModal();
+    }
+
+    function closeCropModal() {
+        document.getElementById('cropModal').style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        // ইউজার যদি ক্রপ বাতিল করে, তাহলে ফাইল ইনপুট ক্লিয়ার করে দেওয়া উচিত
+        // যাতে ফাইল আপলোড না হয়
+        if(!croppedImages[currentCropMode]) {
+            const inputId = currentCropMode === 'edit' ? 'editPhoto' : 'addPhoto';
+            document.getElementById(inputId).value = '';
+        }
+    }
+
+    // ==========================================
+    //  MAIN APP LOGIC
+    // ==========================================
 
     window.addEventListener('DOMContentLoaded', () => {
         initApp();
@@ -650,14 +795,9 @@
         if (user) {
             renderData([user], 'full');
             scrollToElement('result-area');
-            // History API Added
             history.pushState({ view: 'detail' }, '', '');
         }
     }
-
-    // ==========================================
-    //  OLD LOGIC: Init, Fetch, Cache, Render, Filter, Edit
-    // ==========================================
 
     async function initApp() {
         const loader = document.getElementById('loader');
@@ -709,26 +849,20 @@
     }
 
     function populateFilters(data) {
-        // === ১. শিট অর্ডার অনুযায়ী র‍্যাঙ্ক লিস্ট তৈরি করা (Sheet Order Priority) ===
         const uniqueRanks = new Set();
         const orderedRanks = [];
 
-        // ডাটা অ্যারেকে লুপ করা হচ্ছে (Row 0 থেকে শেষ পর্যন্ত)
         for (const item of data) {
             const rank = item.rank;
-            // যদি র‍্যাঙ্কটি আগে লিস্টে যোগ করা না হয়, তবে যোগ করা হবে
-            // এটি শিটের উপরের দিক থেকে নিচের দিক পর্যন্ত র‍্যাঙ্ক পিক করবে
             if (rank && !uniqueRanks.has(rank)) {
                 uniqueRanks.add(rank);
                 orderedRanks.push(rank);
             }
         }
 
-        // === ২. অফিসের লিস্ট তৈরি করা (A-Z সর্ট থাকবে) ===
         const offices = new Set(data.map(item => item.office).filter(o => o));
         const sortedOffices = Array.from(offices).sort();
 
-        // --- A. সার্চ ফিল্টার (Rank) ---
         const rankSelect = document.getElementById('rankFilter');
         if (rankSelect.options.length <= 1) {
             orderedRanks.forEach(rank => {
@@ -739,7 +873,6 @@
             });
         }
 
-        // --- B. সার্চ ফিল্টার (Office) ---
         const officeSelect = document.getElementById('officeFilter');
         if (officeSelect.options.length <= 1) {
             sortedOffices.forEach(office => {
@@ -750,9 +883,7 @@
             });
         }
 
-        // --- C. নতুন সদস্য ড্রপডাউন (Rank) ---
         const addRankSelect = document.getElementById('addRank');
-        // আগের অপশনগুলো ক্লিয়ার করে ডিফল্ট অপশন বসানো
         addRankSelect.innerHTML = '<option value="" disabled selected>পদবী নির্বাচন করুন</option>';
         
         orderedRanks.forEach(rank => {
@@ -774,18 +905,14 @@
         data.forEach((user) => {
             const mobileEn = convertBnToEn(user.mobile);
             
-            // === WhatsApp Number Logic ===
-            // যেহেতু ডাটাবেসে কান্ট্রি কোড নেই, তাই আমরা এখানে লজিক বসাবো
-            let waNum = mobileEn.replace(/\D/g, ''); // সব নন-ডিজিট রিমুভ করা
+            let waNum = mobileEn.replace(/\D/g, ''); 
             if (waNum.startsWith('0')) {
                 waNum = '880' + waNum.substring(1);
             } else if (!waNum.startsWith('88')) {
-                // যদি শুরুতে 0 না থাকে এবং 88 ও না থাকে, তবে 880 যুক্ত করা
                 waNum = '880' + waNum;
             }
             const whatsappLink = `https://wa.me/${waNum}`;
-            // ===============================
-
+            
             const userImg = user.photo ? user.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random';
             
             const card = document.createElement('div');
@@ -822,8 +949,6 @@
             } else {
                 card.className = 'compact-card';
                 card.onclick = () => showUserDetails(user.bpNo);
-                // === এখানে পরিবর্তন করা হয়েছে ===
-                // 'ব্রাশ:' লেখাটি সরিয়ে দেওয়া হয়েছে, শুধু নাম্বার দেখাবে
                 card.innerHTML = `
                     <div class="compact-left">
                         <span class="compact-brush">${user.brushNo}</span>
@@ -865,7 +990,6 @@
         if (isActiveSearch) { 
             renderData(filtered, 'full'); 
             scrollToElement('result-area');
-            // History API Added
             history.pushState({ view: 'search' }, '', '');
         } else { 
             renderData(filtered, 'compact'); 
@@ -880,16 +1004,16 @@
     //  EDIT & ADD MODAL LOGIC
     // ==========================================
 
-    function previewImage(input, imgId, placeholderId) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.getElementById(imgId);
-                img.src = e.target.result;
-                img.style.display = 'block';
-                document.getElementById(placeholderId).style.display = 'none';
-            }
-            reader.readAsDataURL(input.files[0]);
+    // Old previewImage function is replaced by handleFileSelect for upload triggering
+    // But we might still need to manually set preview if loading existing data
+    function setExistingPreview(imgId, placeholderId, src) {
+        const img = document.getElementById(imgId);
+        if (src) {
+            img.src = src;
+            img.style.display = 'block';
+            document.getElementById(placeholderId).style.display = 'none';
+        } else {
+            img.style.display = 'none'; img.src = ''; document.getElementById(placeholderId).style.display = 'block';
         }
     }
 
@@ -902,43 +1026,29 @@
         document.getElementById('editMobile').value = mobile;
         document.getElementById('editOffice').value = office;
         
-        // === FIX: Clone and replace file input to reset state (Chrome Fix) ===
+        // Reset file input and cropped data
+        croppedImages.edit = null;
         const oldInput = document.getElementById('editPhoto');
         const newInput = oldInput.cloneNode(true);
         oldInput.parentNode.replaceChild(newInput, oldInput);
         
-        const imgPreview = document.getElementById('previewEditPhoto');
-        const placeholder = document.getElementById('uploadPlaceholderEdit');
-        
-        if (photo) {
-            imgPreview.src = photo;
-            imgPreview.style.display = 'block';
-            placeholder.style.display = 'none';
-        } else {
-            imgPreview.style.display = 'none'; imgPreview.src = ''; placeholder.style.display = 'block';
-        }
+        setExistingPreview('previewEditPhoto', 'uploadPlaceholderEdit', photo);
         
         document.getElementById('editModal').style.display = 'flex';
-        // History API Added
         history.pushState({ view: 'edit' }, '', '');
     }
 
     function openAddModal() {
-        // ফর্ম ক্লিয়ার করা
         document.getElementById('addForm').reset();
         
-        // === FIX: Clone and replace file input to reset state (Chrome Fix) ===
+        croppedImages.add = null;
         const oldInput = document.getElementById('addPhoto');
         const newInput = oldInput.cloneNode(true);
         oldInput.parentNode.replaceChild(newInput, oldInput);
 
-        document.getElementById('previewAddPhoto').style.display = 'none';
-        document.getElementById('previewAddPhoto').src = '';
-        document.getElementById('uploadPlaceholderAdd').style.display = 'block';
+        setExistingPreview('previewAddPhoto', 'uploadPlaceholderAdd', null);
         
-        // মোডাল ওপেন করা
         document.getElementById('addModal').style.display = 'flex';
-        // History API Added
         history.pushState({ view: 'add' }, '', '');
     }
 
@@ -946,25 +1056,10 @@
         document.getElementById(modalId).style.display = 'none';
     }
 
-    function compressImage(file, maxSize, callback) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function(event) {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = function() {
-                let width = img.width; let height = img.height;
-                const size = Math.min(width, height);
-                const sx = (width - size) / 2; const sy = (height - size) / 2;
-                const canvas = document.createElement('canvas');
-                canvas.width = maxSize; canvas.height = maxSize;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, sx, sy, size, size, 0, 0, maxSize, maxSize);
-                callback(canvas.toDataURL('image/jpeg', 0.7));
-            }
-        }
-    }
-
+    // compressImage is no longer needed strictly if we use Cropper output, 
+    // but kept if user sends file directly without cropping (though logic prevents that now).
+    // We will rely on the cropped Base64 string directly.
+    
     async function submitEdit(e) {
         e.preventDefault();
         const submitBtn = document.querySelector('#editForm .btn-submit');
@@ -975,18 +1070,26 @@
         const newMobile = document.getElementById('editMobile').value;
         const newOffice = document.getElementById('editOffice').value;
         const bpNumber = document.getElementById('editBpNo').value;
-        const fileInput = document.getElementById('editPhoto');
+        
         let finalPhotoUrl = "";
 
         try {
-            if (fileInput.files && fileInput.files[0]) {
+            // চেক করব ক্রপ করা ছবি আছে কিনা
+            if (croppedImages.edit) {
                 showToast('ছবি আপলোড হচ্ছে...');
-                finalPhotoUrl = await uploadImageToDrive(fileInput.files[0]);
+                // ক্রপ করা ছবি সরাসরি আপলোড ফাংশনে পাঠানো হচ্ছে (Base64)
+                finalPhotoUrl = await uploadBase64ToDrive(croppedImages.edit, "profile_edit.jpg");
+            } else {
+                // যদি নতুন ছবি না দেয়, তবে পুরনো ছবি থাকলে সেটা রাখা হবে (লজিক অনুযায়ী আপডেটে ফটো অপশনাল)
+                // যদিও GAS স্ক্রিপ্ট লজিক অনুযায়ী নতুন URL না পাঠালে পুরনোটা থাকে কিনা তা ডিপেন্ড করে।
+                // আমরা এখানে কেবল নতুন ছবি আপলোড করছি যদি ক্রপ করা থাকে।
             }
+
             const payload = {
                 action: 'updateRecord', bpNumber: bpNumber, newName: newName,
                 newBpNo: newBpNo, newMobile: newMobile, newOffice: newOffice, newPhotoUrl: finalPhotoUrl
             };
+            
             const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
             const result = await response.json();
             if (result.status === 'success') {
@@ -998,64 +1101,28 @@
         finally { submitBtn.disabled = false; submitBtn.textContent = 'সাবমিট করুন'; }
     }
 
-    async function uploadImageToDrive(file) {
-        return new Promise((resolve, reject) => {
-            compressImage(file, 800, async (base64String) => {
-                try {
-                    const response = await fetch(GAS_API_URL, {
-                        method: 'POST', body: JSON.stringify({ action: 'uploadImage', imageBase64: base64String, fileName: file.name })
-                    });
-                    const result = await response.json();
-                    if (result.status === 'success') resolve(result.url); else reject(result.message);
-                } catch (err) { reject(err); }
+    // Base64 ডিরেক্টলি আপলোড করার ফাংশন (ক্রপ করা ছবির জন্য)
+    async function uploadBase64ToDrive(base64Data, fileName) {
+        try {
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'uploadImage', 
+                    imageBase64: base64Data, 
+                    fileName: fileName 
+                })
             });
-        });
+            const result = await response.json();
+            if (result.status === 'success') return result.url;
+            else throw new Error(result.message);
+        } catch (err) { 
+            throw err; 
+        }
     }
 
-    function showToast(msg) {
-        const x = document.getElementById("toast");
-        x.textContent = msg; x.className = "show";
-        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
-    }
-
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('editModal')) closeModal('editModal');
-        if (event.target == document.getElementById('addModal')) closeModal('addModal');
-    }
-
-    // ==========================================
-    //  NEW LOGIC: API HISTORY NAVIGATION (BACK BUTTON)
-    // ==========================================
-
-    window.addEventListener('popstate', function(event) {
-        const editModal = document.getElementById('editModal');
-        const addModal = document.getElementById('addModal');
-
-        // ১. প্রথমে চেক করব কোনো মোডাল ওপেন আছে কিনা
-        if (editModal.style.display === 'flex') {
-            closeModal('editModal');
-            return; // ফাংশন শেষ, পেজ ব্যাক হবে না
-        }
-        if (addModal.style.display === 'flex') {
-            closeModal('addModal');
-            return; // ফাংশন শেষ, পেজ ব্যাক হবে না
-        }
-
-        // ২. মোডাল বন্ধ থাকলে, চেক করব ফুল কার্ড (ডিটেইলস) ওপেন আছে কিনা
-        const fullCardExists = document.querySelector('.full-card');
-        if (fullCardExists) {
-            // যদি ফুল কার্ড থাকে, তবে কমপ্যাক্ট ভিউতে ফিরে যাব
-            renderData(allData, 'compact');
-            return; 
-        }
-
-        // ৩. যদি মোডালও না থাকে এবং ফুল কার্ডও না থাকে (মানে হোম পেজে আছি), 
-        // তবে কিছুই করব না, ব্রাউজার তার নিজস্ব ব্যাক বাটন একশন (পূর্ববর্তী সাইটে যাওয়া) করবে।
-    });
-
-    // ==========================================
-    //  NEW LOGIC: Add Member
-    // ==========================================
+    // Legacy compressImage function not strictly needed for cropped images, 
+    // but kept if we want to support non-cropped flow in future.
+    // Currently, handleFileSelect forces cropping.
 
     async function submitAdd(e) {
         e.preventDefault();
@@ -1070,14 +1137,13 @@
         const bpNo = document.getElementById('addBpNo').value;
         const mobile = document.getElementById('addMobile').value;
         const office = document.getElementById('addOffice').value;
-        const fileInput = document.getElementById('addPhoto');
 
         let finalPhotoUrl = "";
 
         try {
-            if (fileInput.files && fileInput.files[0]) {
+            if (croppedImages.add) {
                 showToast('ছবি আপলোড হচ্ছে...');
-                finalPhotoUrl = await uploadImageToDrive(fileInput.files[0]);
+                finalPhotoUrl = await uploadBase64ToDrive(croppedImages.add, "profile_new.jpg");
             }
 
             const payload = {
@@ -1115,6 +1181,43 @@
             submitBtn.textContent = 'সদস্য যুক্ত করুন';
         }
     }
+
+    function showToast(msg) {
+        const x = document.getElementById("toast");
+        x.textContent = msg; x.className = "show";
+        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('editModal')) closeModal('editModal');
+        if (event.target == document.getElementById('addModal')) closeModal('addModal');
+        if (event.target == document.getElementById('cropModal')) closeCropModal();
+    }
+
+    window.addEventListener('popstate', function(event) {
+        const editModal = document.getElementById('editModal');
+        const addModal = document.getElementById('addModal');
+        const cropModal = document.getElementById('cropModal');
+
+        if (cropModal.style.display === 'flex') {
+            closeCropModal();
+            return; 
+        }
+        if (editModal.style.display === 'flex') {
+            closeModal('editModal');
+            return; 
+        }
+        if (addModal.style.display === 'flex') {
+            closeModal('addModal');
+            return; 
+        }
+
+        const fullCardExists = document.querySelector('.full-card');
+        if (fullCardExists) {
+            renderData(allData, 'compact');
+            return; 
+        }
+    });
 
 </script>
 </body>
