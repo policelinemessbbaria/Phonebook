@@ -539,7 +539,6 @@
                 <label class="image-upload-area" for="editPhoto">
                     <span id="uploadPlaceholderEdit" style="font-size: 2rem; pointer-events: none;">📷<br><span style="font-size:0.9rem; color:#666;">ছবি সিলেক্ট করুন</span></span>
                     <img id="previewEditPhoto" class="preview-img">
-                    <!-- ফাইল ইনপুট চেঞ্জ ইভেন্টে আমরা ক্রপিং কল করবো -->
                     <input type="file" id="editPhoto" accept="image/*" style="display:none;" onchange="handleFileSelect(this, 'edit')">
                 </label>
             </div>
@@ -558,7 +557,8 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <input type="text" id="editOffice" required placeholder="যেমন: SAF রেগুলার/ D- স্টো/মেজর অফিস/ মেস...">
+                <!-- list="officeList" যুক্ত করা হয়েছে -->
+                <input type="text" id="editOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('editModal')">বাতিল</button>
@@ -612,7 +612,8 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <input type="text" id="addOffice" required placeholder="যেমন: SAF রেগুলার/ D- স্টো/মেজর অফিস/ মেস...">
+                <!-- list="officeList" যুক্ত করা হয়েছে -->
+                <input type="text" id="addOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('addModal')">বাতিল</button>
@@ -637,6 +638,11 @@
         </div>
     </div>
 </div>
+
+<!-- অফিসের তালিকার জন্য Datalist -->
+<datalist id="officeList">
+    <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে ডেটা লোড হবে -->
+</datalist>
 
 <div id="toast">মেসেজ</div>
 
@@ -816,6 +822,7 @@
                 if (cachedData && cachedData.length > 0) {
                     allData = cachedData;
                     populateFilters(allData);
+                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
                     renderData(allData, 'compact');
                     loader.style.display = 'none';
                 }
@@ -836,6 +843,7 @@
                     const dataToStore = { data: allData, lastUpdated: serverVersion };
                     localStorage.setItem('policeDirectoryCache', JSON.stringify(dataToStore));
                     populateFilters(allData);
+                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
                     renderData(allData, 'compact');
                     if(serverVersion > localVersion && localVersion !== 0) showToast('ডাটা আপডেট হয়েছে।');
                 }
@@ -891,6 +899,28 @@
             option.value = rank;
             option.textContent = rank;
             addRankSelect.appendChild(option);
+        });
+    }
+
+    // === নতুন ফাংশন: অফিসের Datalist পপুলেট করা ===
+    function populateOfficeDatalist(data) {
+        const datalist = document.getElementById('officeList');
+        datalist.innerHTML = ''; // আগের ডাটা ক্লিয়ার
+
+        const uniqueOffices = new Set();
+        data.forEach(item => {
+            if(item.office && item.office.trim() !== "") {
+                uniqueOffices.add(item.office.trim());
+            }
+        });
+
+        // সর্ট করা (বাংলা এবং ইংরেজির জন্য localeCompare ব্যবহার করা ভালো)
+        const sortedOffices = Array.from(uniqueOffices).sort((a, b) => a.localeCompare(b, 'bn'));
+
+        sortedOffices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            datalist.appendChild(option);
         });
     }
 
@@ -1004,8 +1034,6 @@
     //  EDIT & ADD MODAL LOGIC
     // ==========================================
 
-    // Old previewImage function is replaced by handleFileSelect for upload triggering
-    // But we might still need to manually set preview if loading existing data
     function setExistingPreview(imgId, placeholderId, src) {
         const img = document.getElementById(imgId);
         if (src) {
@@ -1026,7 +1054,6 @@
         document.getElementById('editMobile').value = mobile;
         document.getElementById('editOffice').value = office;
         
-        // Reset file input and cropped data
         croppedImages.edit = null;
         const oldInput = document.getElementById('editPhoto');
         const newInput = oldInput.cloneNode(true);
@@ -1055,10 +1082,6 @@
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
     }
-
-    // compressImage is no longer needed strictly if we use Cropper output, 
-    // but kept if user sends file directly without cropping (though logic prevents that now).
-    // We will rely on the cropped Base64 string directly.
     
     async function submitEdit(e) {
         e.preventDefault();
@@ -1074,15 +1097,9 @@
         let finalPhotoUrl = "";
 
         try {
-            // চেক করব ক্রপ করা ছবি আছে কিনা
             if (croppedImages.edit) {
                 showToast('ছবি আপলোড হচ্ছে...');
-                // ক্রপ করা ছবি সরাসরি আপলোড ফাংশনে পাঠানো হচ্ছে (Base64)
                 finalPhotoUrl = await uploadBase64ToDrive(croppedImages.edit, "profile_edit.jpg");
-            } else {
-                // যদি নতুন ছবি না দেয়, তবে পুরনো ছবি থাকলে সেটা রাখা হবে (লজিক অনুযায়ী আপডেটে ফটো অপশনাল)
-                // যদিও GAS স্ক্রিপ্ট লজিক অনুযায়ী নতুন URL না পাঠালে পুরনোটা থাকে কিনা তা ডিপেন্ড করে।
-                // আমরা এখানে কেবল নতুন ছবি আপলোড করছি যদি ক্রপ করা থাকে।
             }
 
             const payload = {
@@ -1101,7 +1118,6 @@
         finally { submitBtn.disabled = false; submitBtn.textContent = 'সাবমিট করুন'; }
     }
 
-    // Base64 ডিরেক্টলি আপলোড করার ফাংশন (ক্রপ করা ছবির জন্য)
     async function uploadBase64ToDrive(base64Data, fileName) {
         try {
             const response = await fetch(GAS_API_URL, {
@@ -1119,10 +1135,6 @@
             throw err; 
         }
     }
-
-    // Legacy compressImage function not strictly needed for cropped images, 
-    // but kept if we want to support non-cropped flow in future.
-    // Currently, handleFileSelect forces cropping.
 
     async function submitAdd(e) {
         e.preventDefault();
