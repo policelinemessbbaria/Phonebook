@@ -260,14 +260,28 @@
             margin: 5px 0 15px 0;
             color: var(--primary-color);
         }
+        
+        /* আপডেটেড অফিস ব্যাজ (বড় করা হয়েছে) */
         .office-badge {
             background-color: #e3f2fd;
             color: #0d47a1;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 1.15rem;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        /* নতুন যোগ করা হয়েছে: দায়িত্ব দেখানোর জন্য ছোট ব্যাজ */
+        .responsibility-badge {
+            background-color: #f5f5f5;
+            color: #555;
+            padding: 3px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            display: block;
+            margin: 0 auto 20px auto;
             font-weight: 500;
         }
 
@@ -442,7 +456,7 @@
 
         /* === CROP MODAL SPECIFIC STYLES === */
         #cropModal .modal-content {
-            max-width: 600px; /* Crop modal needs to be wider */
+            max-width: 600px;
             padding: 15px;
         }
         .crop-container {
@@ -555,10 +569,22 @@
                 <label>মোবাইল নাম্বার</label>
                 <input type="tel" id="editMobile" required>
             </div>
+            
+            <!-- আপডেটেড অফিস সিলেক্ট ও অন্যান্য অপশন -->
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <!-- list="officeList" যুক্ত করা হয়েছে -->
-                <input type="text" id="editOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
+                <select id="editOfficeSelect" onchange="handleOfficeChange('edit')" required>
+                    <option value="" disabled>অফিস সিলেক্ট করুন</option>
+                    <!-- ড্রপডাউনে ডাটা জাভাস্ক্রিপ্ট দিয়ে বসবে -->
+                    <option value="other">অন্যান্য</option>
+                </select>
+                <input type="text" id="editOffice" style="display:none; margin-top:5px;" placeholder="এখানে কর্মরত অফিসের বা থানার নাম লিখুন">
+            </div>
+
+            <!-- নতুন যোগ করা হয়েছে: দায়িত্ব -->
+            <div class="form-group">
+                <label>কোনো অফিসে থাকলে সে অফিসের শাখার নাম লিখুন</label>
+                <input type="text" id="editResponsibility" placeholder="যেমন: PIMS শাখা">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('editModal')">বাতিল</button>
@@ -610,10 +636,16 @@
                 <label>মোবাইল নাম্বার</label>
                 <input type="tel" id="addMobile" required>
             </div>
+
+            <!-- আপডেটেড অফিস সিলেক্ট ও অন্যান্য অপশন -->
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
-                <!-- list="officeList" যুক্ত করা হয়েছে -->
-                <input type="text" id="addOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
+                <select id="addOfficeSelect" onchange="handleOfficeChange('add')" required>
+                    <option value="" disabled selected>অফিস সিলেক্ট করুন</option>
+                    <!-- ড্রপডাউনে ডাটা জাভাস্ক্রিপ্ট দিয়ে বসবে -->
+                    <option value="other">অন্যান্য</option>
+                </select>
+                <input type="text" id="addOffice" style="display:none; margin-top:5px;" placeholder="এখানে অফিসের নাম লিখুন">
             </div>
 
             <button type="button" class="btn-cancel" onclick="closeModal('addModal')">বাতিল</button>
@@ -639,11 +671,6 @@
     </div>
 </div>
 
-<!-- অফিসের তালিকার জন্য Datalist -->
-<datalist id="officeList">
-    <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে ডেটা লোড হবে -->
-</datalist>
-
 <div id="toast">মেসেজ</div>
 
 <!-- ক্রপার লাইব্রেরি (Cropper.js) এর JS -->
@@ -651,7 +678,7 @@
 
 <script>
     // === কনফিগারেশন ===
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzDbu3IL8xFyygtHe5GpqB9Z4qwYHyyVFXPO2IAA4dp62VgerwTMLeCOxcmSKm2Q1YNkw/exec"; 
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxX87ncXM0esxmQHtyOcbA8xI0BsZkHkIbM5-qqJdEoSGlkZh3iUnm40hmaxvTkJjPbLg/exec"; 
     
     let allData = [];
     const bn2enMap = {
@@ -665,10 +692,10 @@
     }
 
     // ==========================================
-    // CROPPER LOGIC (NEW)
+    // CROPPER LOGIC 
     // ==========================================
     let cropper;
-    let currentCropMode = ''; // 'edit' or 'add'
+    let currentCropMode = ''; 
     let croppedImages = {
         edit: null,
         add: null
@@ -680,25 +707,18 @@
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                // ক্রপ মোডালে ইমেজ সেট করা
                 const imageToCrop = document.getElementById('imageToCrop');
                 imageToCrop.src = e.target.result;
-                
-                // মোড সেভ করা (Edit নাকি Add?)
                 currentCropMode = mode;
-                
-                // ক্রপ মোডাল ওপেন করা
                 document.getElementById('cropModal').style.display = 'flex';
                 
-                // আগের ক্রপার ডেস্ট্রয় করা যদি থাকে
                 if (cropper) {
                     cropper.destroy();
                 }
 
-                // ক্রপার ইনিশিয়ালাইজ করা
                 cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1, // 1:1 (Square)
-                    viewMode: 1,    // ছবি ক্রপ বক্সের বাইরে যাবে না
+                    aspectRatio: 1,
+                    viewMode: 1,
                     dragMode: 'move',
                     autoCropArea: 0.8,
                     restore: false,
@@ -710,7 +730,6 @@
                     toggleDragModeOnDblclick: false,
                 });
             }
-            
             reader.readAsDataURL(file);
         }
     }
@@ -718,9 +737,8 @@
     function confirmCrop() {
         if (!cropper) return;
 
-        // ক্রপ করা ক্যানভাস বের করা
         const canvas = cropper.getCroppedCanvas({
-            width: 800, // আউটপুট সাইজ (High Quality)
+            width: 800, 
             height: 800,
             minWidth: 256,
             minHeight: 256,
@@ -731,13 +749,9 @@
             imageSmoothingQuality: 'high',
         });
 
-        // বেস ৬৪ স্ট্রিং-এ কনভার্ট করা
         const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        
-        // গ্লোবাল ভেরিয়েবলে সেভ করা
         croppedImages[currentCropMode] = croppedDataUrl;
 
-        // ফর্ম প্রিভিউ আপডেট করা
         if (currentCropMode === 'edit') {
             const imgPreview = document.getElementById('previewEditPhoto');
             const placeholder = document.getElementById('uploadPlaceholderEdit');
@@ -752,7 +766,6 @@
             placeholder.style.display = 'none';
         }
 
-        // ক্রপ মোডাল বন্ধ করা
         closeCropModal();
     }
 
@@ -762,12 +775,64 @@
             cropper.destroy();
             cropper = null;
         }
-        // ইউজার যদি ক্রপ বাতিল করে, তাহলে ফাইল ইনপুট ক্লিয়ার করে দেওয়া উচিত
-        // যাতে ফাইল আপলোড না হয়
         if(!croppedImages[currentCropMode]) {
             const inputId = currentCropMode === 'edit' ? 'editPhoto' : 'addPhoto';
             document.getElementById(inputId).value = '';
         }
+    }
+
+    // ==========================================
+    //  OFFICE DROPDOWN LOGIC (NEW)
+    // ==========================================
+    function handleOfficeChange(mode) {
+        const selectId = mode === 'edit' ? 'editOfficeSelect' : 'addOfficeSelect';
+        const inputId = mode === 'edit' ? 'editOffice' : 'addOffice';
+        
+        const selectEl = document.getElementById(selectId);
+        const inputEl = document.getElementById(inputId);
+        
+        if (selectEl.value === 'other') {
+            inputEl.style.display = 'block';
+            inputEl.required = true;
+            inputEl.focus();
+        } else {
+            inputEl.style.display = 'none';
+            inputEl.required = false;
+            inputEl.value = '';
+        }
+    }
+
+    function populateOfficeDropdowns(data) {
+        const uniqueOffices = new Set();
+        data.forEach(item => {
+            if(item.office && item.office.trim() !== "") {
+                uniqueOffices.add(item.office.trim());
+            }
+        });
+
+        const sortedOffices = Array.from(uniqueOffices).sort((a, b) => a.localeCompare(b, 'bn'));
+
+        // এডিট মোডালের ড্রপডাউন
+        const editSelect = document.getElementById('editOfficeSelect');
+        editSelect.innerHTML = '<option value="" disabled>অফিস সিলেক্ট করুন</option>';
+        sortedOffices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            option.textContent = office;
+            editSelect.appendChild(option);
+        });
+        editSelect.innerHTML += '<option value="other">অন্যান্য</option>';
+
+        // এড মোডালের ড্রপডাউন
+        const addSelect = document.getElementById('addOfficeSelect');
+        addSelect.innerHTML = '<option value="" disabled selected>অফিস সিলেক্ট করুন</option>';
+        sortedOffices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            option.textContent = office;
+            addSelect.appendChild(option);
+        });
+        addSelect.innerHTML += '<option value="other">অন্যান্য</option>';
     }
 
     // ==========================================
@@ -822,7 +887,7 @@
                 if (cachedData && cachedData.length > 0) {
                     allData = cachedData;
                     populateFilters(allData);
-                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
+                    populateOfficeDropdowns(allData); 
                     renderData(allData, 'compact');
                     loader.style.display = 'none';
                 }
@@ -843,7 +908,7 @@
                     const dataToStore = { data: allData, lastUpdated: serverVersion };
                     localStorage.setItem('policeDirectoryCache', JSON.stringify(dataToStore));
                     populateFilters(allData);
-                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
+                    populateOfficeDropdowns(allData); 
                     renderData(allData, 'compact');
                     if(serverVersion > localVersion && localVersion !== 0) showToast('ডাটা আপডেট হয়েছে।');
                 }
@@ -902,28 +967,6 @@
         });
     }
 
-    // === নতুন ফাংশন: অফিসের Datalist পপুলেট করা ===
-    function populateOfficeDatalist(data) {
-        const datalist = document.getElementById('officeList');
-        datalist.innerHTML = ''; // আগের ডাটা ক্লিয়ার
-
-        const uniqueOffices = new Set();
-        data.forEach(item => {
-            if(item.office && item.office.trim() !== "") {
-                uniqueOffices.add(item.office.trim());
-            }
-        });
-
-        // সর্ট করা (বাংলা এবং ইংরেজির জন্য localeCompare ব্যবহার করা ভালো)
-        const sortedOffices = Array.from(uniqueOffices).sort((a, b) => a.localeCompare(b, 'bn'));
-
-        sortedOffices.forEach(office => {
-            const option = document.createElement('option');
-            option.value = office;
-            datalist.appendChild(option);
-        });
-    }
-
     function renderData(data, viewType) {
         const container = document.getElementById('result-area');
         container.innerHTML = '';
@@ -959,6 +1002,7 @@
                     <span class="rank-badge">${user.rank}</span>
                     <h3 class="user-name">${user.name}</h3>
                     ${user.office ? `<div class="office-badge">${user.office}</div>` : ''}
+                    ${user.responsibility ? `<div class="responsibility-badge">দায়িত্ব: ${user.responsibility}</div>` : ''}
                     
                     <div class="info-grid">
                         <div class="info-item"><span class="info-label">ব্রাশ নং</span><span class="info-value">${user.brushNo}</span></div>
@@ -972,7 +1016,7 @@
                         <button onclick="copyToClipboard('${mobileEn}')" class="btn-action">📋 নম্বর কপি</button>
                     </div>
                     
-                    <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}')">
+                    <button class="btn-edit" onclick="openEditModal('${user.bpNo}', '${user.rank}', '${user.brushNo}', '${user.name}', '${user.bpNo}', '${user.mobile}', '${user.office || ''}', '${user.photo || ''}', '${user.responsibility || ''}')">
                         ✏️ এডিট করুন
                     </button>
                 `;
@@ -1045,15 +1089,31 @@
         }
     }
 
-    function openEditModal(bpNo, rank, brushNo, name, bp, mobile, office, photo) {
+    function openEditModal(bpNo, rank, brushNo, name, bp, mobile, office, photo, responsibility) {
         document.getElementById('editBpNo').value = bpNo;
         document.getElementById('displayRank').value = rank;
         document.getElementById('displayBrushNo').value = brushNo;
         document.getElementById('editName').value = name;
         document.getElementById('editNewBpNo').value = bp;
         document.getElementById('editMobile').value = mobile;
-        document.getElementById('editOffice').value = office;
+        document.getElementById('editResponsibility').value = responsibility;
         
+        // অফিস সেট করার নতুন লজিক
+        const editSelect = document.getElementById('editOfficeSelect');
+        const editInput = document.getElementById('editOffice');
+        
+        // চেক করা হচ্ছে আগের অফিসের নাম ড্রপডাউনে আছে কি না
+        if (office && editSelect.querySelector(`option[value="${office}"]`)) {
+            editSelect.value = office;
+            editInput.style.display = 'none';
+            editInput.value = '';
+        } else {
+            // না থাকলে "অন্যান্য" সিলেক্ট করে ইনপুটে নাম বসানো হবে
+            editSelect.value = 'other';
+            editInput.style.display = 'block';
+            editInput.value = office;
+        }
+
         croppedImages.edit = null;
         const oldInput = document.getElementById('editPhoto');
         const newInput = oldInput.cloneNode(true);
@@ -1067,6 +1127,8 @@
 
     function openAddModal() {
         document.getElementById('addForm').reset();
+        // রিসেট করার পর অন্যান্য ইনপুট লুকিয়ে রাখা
+        document.getElementById('addOffice').style.display = 'none';
         
         croppedImages.add = null;
         const oldInput = document.getElementById('addPhoto');
@@ -1091,7 +1153,16 @@
         const newName = document.getElementById('editName').value;
         const newBpNo = document.getElementById('editNewBpNo').value;
         const newMobile = document.getElementById('editMobile').value;
-        const newOffice = document.getElementById('editOffice').value;
+        
+        // অফিসের ভ্যালু নেওয়ার নতুন লজিক
+        let newOffice = "";
+        if (document.getElementById('editOfficeSelect').value === 'other') {
+            newOffice = document.getElementById('editOffice').value;
+        } else {
+            newOffice = document.getElementById('editOfficeSelect').value;
+        }
+
+        const newResponsibility = document.getElementById('editResponsibility').value;
         const bpNumber = document.getElementById('editBpNo').value;
         
         let finalPhotoUrl = "";
@@ -1104,7 +1175,8 @@
 
             const payload = {
                 action: 'updateRecord', bpNumber: bpNumber, newName: newName,
-                newBpNo: newBpNo, newMobile: newMobile, newOffice: newOffice, newPhotoUrl: finalPhotoUrl
+                newBpNo: newBpNo, newMobile: newMobile, newOffice: newOffice, 
+                newResponsibility: newResponsibility, newPhotoUrl: finalPhotoUrl
             };
             
             const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
@@ -1148,7 +1220,14 @@
         const name = document.getElementById('addName').value;
         const bpNo = document.getElementById('addBpNo').value;
         const mobile = document.getElementById('addMobile').value;
-        const office = document.getElementById('addOffice').value;
+        
+        // অফিসের ভ্যালু নেওয়ার নতুন লজিক
+        let office = "";
+        if (document.getElementById('addOfficeSelect').value === 'other') {
+            office = document.getElementById('addOffice').value;
+        } else {
+            office = document.getElementById('addOfficeSelect').value;
+        }
 
         let finalPhotoUrl = "";
 
