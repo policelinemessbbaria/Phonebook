@@ -61,22 +61,14 @@
             color: var(--text-color);
             -webkit-font-smoothing: antialiased;
         }
-        
-        /* === নতুন যোগ করা স্টিকি র‍্যাপার স্টাইল === */
-        .sticky-top-wrapper {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: var(--bg-color); /* বডিতে যে ব্যাকগ্রাউন্ড সেটা দেওয়া হলো */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); স্ক্রল করলে নিচে হালকা শ্যাডো দেখাবে
-        }
-
         header {
             background-color: var(--primary-color);
             color: white;
             padding: 10px 20px;
-            /* position: sticky; top: 0; z-index: 100; --> এই লাইনগুলো রিমুভ করে দেওয়া হয়েছে */
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .header-content {
             display: flex;
@@ -475,49 +467,42 @@
 </head>
 <body>
 
-<!-- === নতুন: স্টিকি র‍্যাপার শুরু === -->
-<div class="sticky-top-wrapper">
-    <header>
-        <div class="header-content">
-            <div class="header-title">
-                <h1>জেলা পুলিশ, ব্রাহ্মণবাড়িয়া</h1>
-                <p>ডিজিটাল ফোনবুক</p>
-            </div>
-            <button class="btn-add-header" onclick="openAddModal()">+ নতুন সদস্য</button>
+<header>
+    <div class="header-content">
+        <div class="header-title">
+            <h1>জেলা পুলিশ, ব্রাহ্মণবাড়িয়া</h1>
+            <p>স্মার্ট ফোনবুক</p>
         </div>
-    </header>
+        <button class="btn-add-header" onclick="openAddModal()">+ নতুন সদস্য</button>
+    </div>
+</header>
 
-    <div class="container" style="padding-bottom: 0;">
-        <div class="search-box">
-            <div class="filter-row">
-                <div class="form-group">
-                    <label for="rankFilter">পদবী</label>
-                    <select id="rankFilter" onchange="filterData()">
-                        <option value="">সকল পদবী</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="officeFilter">কর্মরত/অফিস</label>
-                    <select id="officeFilter" onchange="filterData()">
-                        <option value="">সকল অফিস</option>
-                    </select>
-                </div>
-            </div>
-
+<main class="container">
+    <div class="search-box">
+        <div class="filter-row">
             <div class="form-group">
-                <label>ব্রাশ/নাম/বিপি নাম্বার দিয়ে অনুসন্ধান করুন</label>
-                <div class="input-group">
-                    <input type="text" id="searchInput" placeholder="যেমন:১০১৪/সুজন/৯৯১৮২১৫৮০৫...">
-                    <button class="btn-search" onclick="filterData()">🔍</button>
-                </div>
+                <label for="rankFilter">পদবী</label>
+                <select id="rankFilter" onchange="filterData()">
+                    <option value="">সকল পদবী</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="officeFilter">কর্মরত/অফিস</label>
+                <select id="officeFilter" onchange="filterData()">
+                    <option value="">সকল অফিস</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>ব্রাশ নাম্বার/নাম/বিপি নাম্বার দিয়ে অনুসন্ধান করুন</label>
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="যেমন:১০১৪/সুজন/৯৯১৮২১৫৮০৫...">
+                <button class="btn-search" onclick="filterData()">🔍</button>
             </div>
         </div>
     </div>
-</div>
-<!-- === নতুন: স্টিকি র‍্যাপার শেষ === -->
-
-
-<main class="container">
+    
     <!-- লোডার -->
     <div id="loader" style="display:none;">
         <div class="loader-spinner"></div>
@@ -572,6 +557,7 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
+                <!-- list="officeList" যুক্ত করা হয়েছে -->
                 <input type="text" id="editOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
             </div>
 
@@ -626,6 +612,7 @@
             </div>
             <div class="form-group">
                 <label>কর্মরত (Office/Unit)</label>
+                <!-- list="officeList" যুক্ত করা হয়েছে -->
                 <input type="text" id="addOffice" list="officeList" required placeholder="অফিস সিলেক্ট করুন অথবা টাইপ করুন">
             </div>
 
@@ -653,7 +640,9 @@
 </div>
 
 <!-- অফিসের তালিকার জন্য Datalist -->
-<datalist id="officeList"></datalist>
+<datalist id="officeList">
+    <!-- জাভাস্ক্রিপ্ট দিয়ে এখানে ডেটা লোড হবে -->
+</datalist>
 
 <div id="toast">মেসেজ</div>
 
@@ -679,8 +668,11 @@
     // CROPPER LOGIC (NEW)
     // ==========================================
     let cropper;
-    let currentCropMode = '';
-    let croppedImages = { edit: null, add: null };
+    let currentCropMode = ''; // 'edit' or 'add'
+    let croppedImages = {
+        edit: null,
+        add: null
+    };
 
     function handleFileSelect(input, mode) {
         if (input.files && input.files[0]) {
@@ -688,16 +680,25 @@
             const reader = new FileReader();
             
             reader.onload = function(e) {
+                // ক্রপ মোডালে ইমেজ সেট করা
                 const imageToCrop = document.getElementById('imageToCrop');
                 imageToCrop.src = e.target.result;
+                
+                // মোড সেভ করা (Edit নাকি Add?)
                 currentCropMode = mode;
+                
+                // ক্রপ মোডাল ওপেন করা
                 document.getElementById('cropModal').style.display = 'flex';
                 
-                if (cropper) cropper.destroy();
+                // আগের ক্রপার ডেস্ট্রয় করা যদি থাকে
+                if (cropper) {
+                    cropper.destroy();
+                }
 
+                // ক্রপার ইনিশিয়ালাইজ করা
                 cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,
-                    viewMode: 1,
+                    aspectRatio: 1, // 1:1 (Square)
+                    viewMode: 1,    // ছবি ক্রপ বক্সের বাইরে যাবে না
                     dragMode: 'move',
                     autoCropArea: 0.8,
                     restore: false,
@@ -709,35 +710,60 @@
                     toggleDragModeOnDblclick: false,
                 });
             }
+            
             reader.readAsDataURL(file);
         }
     }
 
     function confirmCrop() {
         if (!cropper) return;
+
+        // ক্রপ করা ক্যানভাস বের করা
         const canvas = cropper.getCroppedCanvas({
-            width: 800, height: 800, minWidth: 256, minHeight: 256,
-            maxWidth: 4096, maxHeight: 4096, fillColor: '#fff',
-            imageSmoothingEnabled: true, imageSmoothingQuality: 'high',
+            width: 800, // আউটপুট সাইজ (High Quality)
+            height: 800,
+            minWidth: 256,
+            minHeight: 256,
+            maxWidth: 4096,
+            maxHeight: 4096,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
         });
+
+        // বেস ৬৪ স্ট্রিং-এ কনভার্ট করা
         const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // গ্লোবাল ভেরিয়েবলে সেভ করা
         croppedImages[currentCropMode] = croppedDataUrl;
 
+        // ফর্ম প্রিভিউ আপডেট করা
         if (currentCropMode === 'edit') {
             const imgPreview = document.getElementById('previewEditPhoto');
             const placeholder = document.getElementById('uploadPlaceholderEdit');
-            imgPreview.src = croppedDataUrl; imgPreview.style.display = 'block'; placeholder.style.display = 'none';
+            imgPreview.src = croppedDataUrl;
+            imgPreview.style.display = 'block';
+            placeholder.style.display = 'none';
         } else if (currentCropMode === 'add') {
             const imgPreview = document.getElementById('previewAddPhoto');
             const placeholder = document.getElementById('uploadPlaceholderAdd');
-            imgPreview.src = croppedDataUrl; imgPreview.style.display = 'block'; placeholder.style.display = 'none';
+            imgPreview.src = croppedDataUrl;
+            imgPreview.style.display = 'block';
+            placeholder.style.display = 'none';
         }
+
+        // ক্রপ মোডাল বন্ধ করা
         closeCropModal();
     }
 
     function closeCropModal() {
         document.getElementById('cropModal').style.display = 'none';
-        if (cropper) { cropper.destroy(); cropper = null; }
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        // ইউজার যদি ক্রপ বাতিল করে, তাহলে ফাইল ইনপুট ক্লিয়ার করে দেওয়া উচিত
+        // যাতে ফাইল আপলোড না হয়
         if(!croppedImages[currentCropMode]) {
             const inputId = currentCropMode === 'edit' ? 'editPhoto' : 'addPhoto';
             document.getElementById(inputId).value = '';
@@ -748,18 +774,22 @@
     //  MAIN APP LOGIC
     // ==========================================
 
-    window.addEventListener('DOMContentLoaded', () => { initApp(); });
+    window.addEventListener('DOMContentLoaded', () => {
+        initApp();
+    });
 
     document.getElementById("searchInput").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") { event.preventDefault(); filterData(); }
+        if (event.key === "Enter") {
+            event.preventDefault();
+            filterData();
+        }
     });
 
     function scrollToElement(elementId) {
         const element = document.getElementById(elementId);
-        // এখানে শুধু header এর পরিবর্তে পুরো sticky wrapper এর হাইট নেওয়া হয়েছে
-        const stickyWrapper = document.querySelector('.sticky-top-wrapper');
-        if(element && stickyWrapper){
-            const headerOffset = stickyWrapper.offsetHeight + 15; 
+        const header = document.querySelector('header');
+        if(element && header){
+            const headerOffset = header.offsetHeight + 15;
             const elementPosition = element.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
             window.scrollTo({ top: offsetPosition, behavior: "smooth" });
@@ -792,7 +822,7 @@
                 if (cachedData && cachedData.length > 0) {
                     allData = cachedData;
                     populateFilters(allData);
-                    populateOfficeDatalist(allData);
+                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
                     renderData(allData, 'compact');
                     loader.style.display = 'none';
                 }
@@ -800,7 +830,10 @@
         }
 
         try {
-            const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'getAllData' }) });
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'getAllData' })
+            });
             const result = await response.json();
 
             if (result.status === 'success') {
@@ -810,7 +843,7 @@
                     const dataToStore = { data: allData, lastUpdated: serverVersion };
                     localStorage.setItem('policeDirectoryCache', JSON.stringify(dataToStore));
                     populateFilters(allData);
-                    populateOfficeDatalist(allData);
+                    populateOfficeDatalist(allData); // Datalist পপুলেট করা
                     renderData(allData, 'compact');
                     if(serverVersion > localVersion && localVersion !== 0) showToast('ডাটা আপডেট হয়েছে।');
                 }
@@ -829,7 +862,10 @@
 
         for (const item of data) {
             const rank = item.rank;
-            if (rank && !uniqueRanks.has(rank)) { uniqueRanks.add(rank); orderedRanks.push(rank); }
+            if (rank && !uniqueRanks.has(rank)) {
+                uniqueRanks.add(rank);
+                orderedRanks.push(rank);
+            }
         }
 
         const offices = new Set(data.map(item => item.office).filter(o => o));
@@ -837,26 +873,55 @@
 
         const rankSelect = document.getElementById('rankFilter');
         if (rankSelect.options.length <= 1) {
-            orderedRanks.forEach(rank => { const option = document.createElement('option'); option.value = rank; option.textContent = rank; rankSelect.appendChild(option); });
+            orderedRanks.forEach(rank => {
+                const option = document.createElement('option');
+                option.value = rank;
+                option.textContent = rank;
+                rankSelect.appendChild(option);
+            });
         }
 
         const officeSelect = document.getElementById('officeFilter');
         if (officeSelect.options.length <= 1) {
-            sortedOffices.forEach(office => { const option = document.createElement('option'); option.value = office; option.textContent = office; officeSelect.appendChild(option); });
+            sortedOffices.forEach(office => {
+                const option = document.createElement('option');
+                option.value = office;
+                option.textContent = office;
+                officeSelect.appendChild(option);
+            });
         }
 
         const addRankSelect = document.getElementById('addRank');
         addRankSelect.innerHTML = '<option value="" disabled selected>পদবী নির্বাচন করুন</option>';
-        orderedRanks.forEach(rank => { const option = document.createElement('option'); option.value = rank; option.textContent = rank; addRankSelect.appendChild(option); });
+        
+        orderedRanks.forEach(rank => {
+            const option = document.createElement('option');
+            option.value = rank;
+            option.textContent = rank;
+            addRankSelect.appendChild(option);
+        });
     }
 
+    // === নতুন ফাংশন: অফিসের Datalist পপুলেট করা ===
     function populateOfficeDatalist(data) {
         const datalist = document.getElementById('officeList');
-        datalist.innerHTML = '';
+        datalist.innerHTML = ''; // আগের ডাটা ক্লিয়ার
+
         const uniqueOffices = new Set();
-        data.forEach(item => { if(item.office && item.office.trim() !== "") uniqueOffices.add(item.office.trim()); });
+        data.forEach(item => {
+            if(item.office && item.office.trim() !== "") {
+                uniqueOffices.add(item.office.trim());
+            }
+        });
+
+        // সর্ট করা (বাংলা এবং ইংরেজির জন্য localeCompare ব্যবহার করা ভালো)
         const sortedOffices = Array.from(uniqueOffices).sort((a, b) => a.localeCompare(b, 'bn'));
-        sortedOffices.forEach(office => { const option = document.createElement('option'); option.value = office; datalist.appendChild(option); });
+
+        sortedOffices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            datalist.appendChild(option);
+        });
     }
 
     function renderData(data, viewType) {
@@ -869,12 +934,17 @@
 
         data.forEach((user) => {
             const mobileEn = convertBnToEn(user.mobile);
-            let waNum = mobileEn.replace(/\D/g, ''); 
-            if (waNum.startsWith('0')) waNum = '880' + waNum.substring(1);
-            else if (!waNum.startsWith('88')) waNum = '880' + waNum;
             
+            let waNum = mobileEn.replace(/\D/g, ''); 
+            if (waNum.startsWith('0')) {
+                waNum = '880' + waNum.substring(1);
+            } else if (!waNum.startsWith('88')) {
+                waNum = '880' + waNum;
+            }
             const whatsappLink = `https://wa.me/${waNum}`;
+            
             const userImg = user.photo ? user.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name) + '&background=random';
+            
             const card = document.createElement('div');
 
             if (viewType === 'full') {
@@ -967,7 +1037,9 @@
     function setExistingPreview(imgId, placeholderId, src) {
         const img = document.getElementById(imgId);
         if (src) {
-            img.src = src; img.style.display = 'block'; document.getElementById(placeholderId).style.display = 'none';
+            img.src = src;
+            img.style.display = 'block';
+            document.getElementById(placeholderId).style.display = 'none';
         } else {
             img.style.display = 'none'; img.src = ''; document.getElementById(placeholderId).style.display = 'block';
         }
@@ -988,23 +1060,28 @@
         oldInput.parentNode.replaceChild(newInput, oldInput);
         
         setExistingPreview('previewEditPhoto', 'uploadPlaceholderEdit', photo);
+        
         document.getElementById('editModal').style.display = 'flex';
         history.pushState({ view: 'edit' }, '', '');
     }
 
     function openAddModal() {
         document.getElementById('addForm').reset();
+        
         croppedImages.add = null;
         const oldInput = document.getElementById('addPhoto');
         const newInput = oldInput.cloneNode(true);
         oldInput.parentNode.replaceChild(newInput, oldInput);
 
         setExistingPreview('previewAddPhoto', 'uploadPlaceholderAdd', null);
+        
         document.getElementById('addModal').style.display = 'flex';
         history.pushState({ view: 'add' }, '', '');
     }
 
-    function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
     
     async function submitEdit(e) {
         e.preventDefault();
@@ -1016,6 +1093,7 @@
         const newMobile = document.getElementById('editMobile').value;
         const newOffice = document.getElementById('editOffice').value;
         const bpNumber = document.getElementById('editBpNo').value;
+        
         let finalPhotoUrl = "";
 
         try {
@@ -1024,7 +1102,11 @@
                 finalPhotoUrl = await uploadBase64ToDrive(croppedImages.edit, "profile_edit.jpg");
             }
 
-            const payload = { action: 'updateRecord', bpNumber: bpNumber, newName: newName, newBpNo: newBpNo, newMobile: newMobile, newOffice: newOffice, newPhotoUrl: finalPhotoUrl };
+            const payload = {
+                action: 'updateRecord', bpNumber: bpNumber, newName: newName,
+                newBpNo: newBpNo, newMobile: newMobile, newOffice: newOffice, newPhotoUrl: finalPhotoUrl
+            };
+            
             const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
             const result = await response.json();
             if (result.status === 'success') {
@@ -1038,17 +1120,28 @@
 
     async function uploadBase64ToDrive(base64Data, fileName) {
         try {
-            const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadImage', imageBase64: base64Data, fileName: fileName }) });
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'uploadImage', 
+                    imageBase64: base64Data, 
+                    fileName: fileName 
+                })
+            });
             const result = await response.json();
             if (result.status === 'success') return result.url;
             else throw new Error(result.message);
-        } catch (err) { throw err; }
+        } catch (err) { 
+            throw err; 
+        }
     }
 
     async function submitAdd(e) {
         e.preventDefault();
+        
         const submitBtn = document.querySelector('#addForm .btn-submit');
-        submitBtn.disabled = true; submitBtn.textContent = 'প্রসেসিং হচ্ছে...';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'প্রসেসিং হচ্ছে...';
 
         const rank = document.getElementById('addRank').value;
         const brushNo = document.getElementById('addBrushNo').value;
@@ -1056,6 +1149,7 @@
         const bpNo = document.getElementById('addBpNo').value;
         const mobile = document.getElementById('addMobile').value;
         const office = document.getElementById('addOffice').value;
+
         let finalPhotoUrl = "";
 
         try {
@@ -1064,20 +1158,39 @@
                 finalPhotoUrl = await uploadBase64ToDrive(croppedImages.add, "profile_new.jpg");
             }
 
-            const payload = { action: 'createRecord', rank: rank, brushNo: brushNo, name: name, bpNo: bpNo, mobile: mobile, office: office, photoUrl: finalPhotoUrl };
-            const response = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const payload = {
+                action: 'createRecord',
+                rank: rank,
+                brushNo: brushNo,
+                name: name,
+                bpNo: bpNo,
+                mobile: mobile,
+                office: office,
+                photoUrl: finalPhotoUrl
+            };
+
+            const response = await fetch(GAS_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
             const result = await response.json();
             
             if (result.status === 'success') {
                 showToast('✅ নতুন সদস্য সফলভাবে যুক্ত হয়েছে।');
                 closeModal('addModal');
-                localStorage.removeItem('policeDirectoryCache'); initApp(); 
-            } else { showToast('❌ এরর: ' + result.message); }
+                localStorage.removeItem('policeDirectoryCache'); 
+                initApp(); 
+            } else {
+                showToast('❌ এরর: ' + result.message);
+            }
+
         } catch (error) {
             console.error(error);
             showToast('❌ নেটওয়ার্ক এরর। আবার চেষ্টা করুন।');
         } finally {
-            submitBtn.disabled = false; submitBtn.textContent = 'সদস্য যুক্ত করুন';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'সদস্য যুক্ত করুন';
         }
     }
 
@@ -1098,12 +1211,24 @@
         const addModal = document.getElementById('addModal');
         const cropModal = document.getElementById('cropModal');
 
-        if (cropModal.style.display === 'flex') { closeCropModal(); return; }
-        if (editModal.style.display === 'flex') { closeModal('editModal'); return; }
-        if (addModal.style.display === 'flex') { closeModal('addModal'); return; }
+        if (cropModal.style.display === 'flex') {
+            closeCropModal();
+            return; 
+        }
+        if (editModal.style.display === 'flex') {
+            closeModal('editModal');
+            return; 
+        }
+        if (addModal.style.display === 'flex') {
+            closeModal('addModal');
+            return; 
+        }
 
         const fullCardExists = document.querySelector('.full-card');
-        if (fullCardExists) { renderData(allData, 'compact'); return; }
+        if (fullCardExists) {
+            renderData(allData, 'compact');
+            return; 
+        }
     });
 
 </script>
