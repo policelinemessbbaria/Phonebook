@@ -1309,13 +1309,39 @@
         if (duplicateUser) {
             submitBtn.disabled = false;
             submitBtn.textContent = 'সদস্য যুক্ত করুন';
-            await Swal.fire({
-                icon: 'error',
-                title: 'ডুপ্লিকেট ব্রাশ নাম্বার!',
-                html: "এই ব্রাশ নাম্বারটি ইতিমধ্যে <b>'" + duplicateUser.name + "'</b>-এর নামে যুক্ত আছে।<br>ঠিক আছে চাপলে ওই এন্ট্রিটির এডিট পেজ খুলবে।",
-                confirmButtonText: 'ঠিক আছে',
-                confirmButtonColor: '#006a4e'
+            const duplicateResult = await Swal.fire({
+                icon: 'warning',
+                title: 'ব্রাশ নাম্বারটি ইতিমধ্যে যুক্ত আছে',
+                html: "এই ব্রাশ নাম্বারটি ইতিমধ্যে <b>'" + duplicateUser.name + "'</b>-এর নামে যুক্ত আছে।<br><br>এই ব্রাশ নাম্বারটি কি আপনার নামে তৈরি করতে চান?",
+                showCancelButton: true,
+                confirmButtonText: 'হ্যাঁ',
+                cancelButtonText: 'না',
+                confirmButtonColor: '#006a4e',
+                cancelButtonColor: '#d33',
+                reverseButtons: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false
             });
+
+            // হ্যাঁ: পুরোনো এন্ট্রিটির Edit পেজ খুলবে
+            if (duplicateResult.isConfirmed) {
+                closeModal('addModal');
+                openEditModal(
+                    duplicateUser.bpNo,
+                    duplicateUser.rank,
+                    duplicateUser.brushNo,
+                    duplicateUser.name,
+                    duplicateUser.bpNo,
+                    duplicateUser.mobile,
+                    duplicateUser.office || '',
+                    duplicateUser.photo || '',
+                    duplicateUser.responsibility || ''
+                );
+            }
+
+            // না: কোনো Edit পেজ খুলবে না; Add Member modal-এই থাকবে
+            // নতুন Brush Number দেওয়ার সুযোগ থাকবে।
+            return;
             closeModal('addModal');
             openEditModal(duplicateUser.bpNo, duplicateUser.rank, duplicateUser.brushNo, duplicateUser.name, duplicateUser.bpNo, duplicateUser.mobile, duplicateUser.office || '', duplicateUser.photo || '', duplicateUser.responsibility || '');
             return;
