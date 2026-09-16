@@ -570,7 +570,10 @@
             </div>
             <div class="form-group">
                 <label>মোবাইল নাম্বার</label>
-                <input type="tel" id="editMobile" required>
+                <input type="tel" id="editMobile" required
+                       inputmode="numeric" maxlength="11" pattern="01[0-9]{9}"
+                       placeholder="01XXXXXXXXX"
+                       oninput="validateMobileInput(this)">
             </div>
             
             <!-- আপডেটেড অফিস সিলেক্ট ও অন্যান্য অপশন -->
@@ -637,7 +640,10 @@
             </div>
             <div class="form-group">
                 <label>মোবাইল নাম্বার</label>
-                <input type="tel" id="addMobile" required>
+                <input type="tel" id="addMobile" required
+                      inputmode="numeric" maxlength="11" pattern="01[0-9]{9}"
+                      placeholder="01XXXXXXXXX"
+                      oninput="validateMobileInput(this)">
             </div>
 
             <!-- আপডেটেড অফিস সিলেক্ট ও অন্যান্য অপশন -->
@@ -1160,6 +1166,35 @@
         document.getElementById(modalId).style.display = 'none';
     }
     
+    // ============================================================
+    // মোবাইল নাম্বার ভ্যালিডেশন
+    // নিয়ম: শুধুমাত্র 01 দিয়ে শুরু হওয়া ঠিক ১১ সংখ্যার নম্বর গ্রহণযোগ্য
+    // ১১ সংখ্যার বেশি টাইপ/পেস্ট করা যাবে না।
+    // বাংলা সংখ্যা লিখলে ইংরেজি সংখ্যায় রূপান্তর হবে।
+    // ============================================================
+    function validateMobileInput(input) {
+        const bnToEn = {
+            '০':'0','১':'1','২':'2','৩':'3','৪':'4',
+            '৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
+        };
+
+        let value = input.value
+            .split('')
+            .map(ch => bnToEn[ch] ?? ch)
+            .join('')
+            .replace(/\D/g, '')
+            .slice(0, 11);
+
+        if (value.length >= 1 && value[0] !== '0') value = '';
+        if (value.length >= 2 && value.slice(0, 2) !== '01') value = value.slice(0, 1);
+
+        input.value = value;
+    }
+
+    function isValidMobileNumber(value) {
+        return /^01[0-9]{9}$/.test(String(value || '').trim());
+    }
+
     async function submitEdit(e) {
         e.preventDefault();
         const submitBtn = document.querySelector('#editForm .btn-submit');
@@ -1167,7 +1202,23 @@
         
         const newName = document.getElementById('editName').value;
         const newBpNo = document.getElementById('editNewBpNo').value;
-        const newMobile = document.getElementById('editMobile').value;
+        const mobileInput = document.getElementById('editMobile');
+        validateMobileInput(mobileInput);
+        const newMobile = mobileInput.value;
+
+        if (!isValidMobileNumber(newMobile)) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'সাবমিট করুন';
+            await Swal.fire({
+                icon: 'warning',
+                title: 'সঠিক মোবাইল নাম্বার দিন',
+                text: 'মোবাইল নাম্বার অবশ্যই 01 দিয়ে শুরু হতে হবে এবং মোট ১১ সংখ্যা হতে হবে।',
+                confirmButtonText: 'ঠিক আছে',
+                confirmButtonColor: '#006a4e'
+            });
+            mobileInput.focus();
+            return;
+        }
         
         // অফিসের ভ্যালু নেওয়ার নতুন লজিক
         let newOffice = "";
@@ -1234,7 +1285,23 @@
         const brushNo = document.getElementById('addBrushNo').value;
         const name = document.getElementById('addName').value;
         const bpNo = document.getElementById('addBpNo').value;
-        const mobile = document.getElementById('addMobile').value;
+        const mobileInput = document.getElementById('addMobile');
+        validateMobileInput(mobileInput);
+        const mobile = mobileInput.value;
+
+        if (!isValidMobileNumber(mobile)) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'সদস্য যুক্ত করুন';
+            await Swal.fire({
+                icon: 'warning',
+                title: 'সঠিক মোবাইল নাম্বার দিন',
+                text: 'মোবাইল নাম্বার অবশ্যই 01 দিয়ে শুরু হতে হবে এবং মোট ১১ সংখ্যা হতে হবে।',
+                confirmButtonText: 'ঠিক আছে',
+                confirmButtonColor: '#006a4e'
+            });
+            mobileInput.focus();
+            return;
+        }
 
         // ডুপ্লিকেট ব্রাশ নাম্বার চেক করা হচ্ছে
         const newBrushEn = convertBnToEn(brushNo).trim();
