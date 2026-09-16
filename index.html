@@ -10,6 +10,9 @@
 <!-- ক্রপার লাইব্রেরি (Cropper.js) এর CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
 
+<!-- সুইট অ্যালার্ট লাইব্রেরি (SweetAlert2) এর CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.14.5/sweetalert2.min.css" />
+
 <!-- আপডেট করা সার্ভিস ওয়ার্কার কোড -->
 <script>
   let refreshing = false;
@@ -676,6 +679,9 @@
 <!-- ক্রপার লাইব্রেরি (Cropper.js) এর JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
+<!-- সুইট অ্যালার্ট লাইব্রেরি (SweetAlert2) এর JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.14.5/sweetalert2.all.min.js"></script>
+
 <script>
     // === কনফিগারেশন ===
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxX87ncXM0esxmQHtyOcbA8xI0BsZkHkIbM5-qqJdEoSGlkZh3iUnm40hmaxvTkJjPbLg/exec"; 
@@ -1059,6 +1065,15 @@
             }
             return matchRank && matchOffice && matchSearch;
         });
+
+        // ব্রাশ নাম্বারে মিলে যাওয়া রেজাল্টগুলো আগে দেখানোর জন্য সর্টিং
+        if (query !== '') {
+            filtered.sort((a, b) => {
+                const aBrushMatch = convertBnToEn(a.brushNo).includes(queryEn) ? 0 : 1;
+                const bBrushMatch = convertBnToEn(b.brushNo).includes(queryEn) ? 0 : 1;
+                return aBrushMatch - bBrushMatch;
+            });
+        }
         
         const isActiveSearch = (query !== '' || rank !== '' || office !== '');
         if (isActiveSearch) { 
@@ -1220,7 +1235,25 @@
         const name = document.getElementById('addName').value;
         const bpNo = document.getElementById('addBpNo').value;
         const mobile = document.getElementById('addMobile').value;
-        
+
+        // ডুপ্লিকেট ব্রাশ নাম্বার চেক করা হচ্ছে
+        const newBrushEn = convertBnToEn(brushNo).trim();
+        const duplicateUser = allData.find(u => convertBnToEn(u.brushNo).trim() === newBrushEn && newBrushEn !== '');
+        if (duplicateUser) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'সদস্য যুক্ত করুন';
+            await Swal.fire({
+                icon: 'error',
+                title: 'ডুপ্লিকেট ব্রাশ নাম্বার!',
+                html: "এই ব্রাশ নাম্বারটি ইতিমধ্যে <b>'" + duplicateUser.name + "'</b>-এর নামে যুক্ত আছে।<br>ঠিক আছে চাপলে ওই এন্ট্রিটির এডিট পেজ খুলবে।",
+                confirmButtonText: 'ঠিক আছে',
+                confirmButtonColor: '#006a4e'
+            });
+            closeModal('addModal');
+            openEditModal(duplicateUser.bpNo, duplicateUser.rank, duplicateUser.brushNo, duplicateUser.name, duplicateUser.bpNo, duplicateUser.mobile, duplicateUser.office || '', duplicateUser.photo || '', duplicateUser.responsibility || '');
+            return;
+        }
+
         // অফিসের ভ্যালু নেওয়ার নতুন লজিক
         let office = "";
         if (document.getElementById('addOfficeSelect').value === 'other') {
